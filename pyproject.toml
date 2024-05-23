@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "gym-tracker"
+version = "0.1.0"
+description = ""
+authors = ["Lokixin <dimasavilamartinez@gmail.com>"]
+packages = [{ include = "gym_tracker", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+mypy = "^1.10.0"
+pendulum = "^3.0.0"
+pytest = "^8.2.1"
+pytest-mock = "^3.14.0"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.4.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
