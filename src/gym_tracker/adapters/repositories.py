@@ -36,16 +36,7 @@ class PostgresSQLRepo:
             exercise_metadata_tuple = cursor.fetchone()
             cursor.execute(select_muscle_group_by_id, (exercise_metadata_tuple[0][2],))
             muscle_group_name = cursor.fetchone()[0]
-            cursor.execute(
-                select_secondary_muscle_groups, (exercise_metadata_tuple[0][0],)
-            )
-            secondary_muscle_groups_ids = cursor.fetchall()
-            secondary_musclegroups = cursor.execute(
-                select_any_muscle_groups,
-                [
-                    [_id[0] for _id in secondary_muscle_groups_ids],
-                ],
-            )
+            cursor.execute(select_combined, (exercise_metadata_tuple[0][0],))
             secondary_musclegroups = cursor.fetchall()
             exercise_metadata = ExerciseMetadata(
                 name=exercise_metadata_tuple[0][1],
@@ -97,9 +88,7 @@ class PostgresSQLRepo:
             metadata_id = cursor.fetchone()[0]
             cursor.executemany(
                 insert_secondary_muscle_groups,
-                [
-                    (metadata_id, _id) for _id in secondary_muscle_groups_ids
-                ]
+                [(metadata_id, _id) for _id in secondary_muscle_groups_ids],
             )
 
     def _check_if_metadata_already_exists(self, exercise_name: str) -> bool:
