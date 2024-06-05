@@ -25,6 +25,12 @@ class ExerciseMetadata:
     primary_muscle_group: MuscleGroup
     secondary_muscle_groups: list[MuscleGroup]
 
+    def __repr__(self) -> str:
+        return (
+            f"Name={self.name} primary_muscle={self.primary_muscle_group} "
+            f"secondary_muscles={self.secondary_muscle_groups}"
+        )
+
 
 @dataclass
 class ExerciseSet:
