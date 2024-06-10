@@ -5,11 +5,11 @@ from psycopg import Connection
 
 from gym_tracker.adapters.admin_queries import (
     select_exercise_metadata_by_name,
-    select_muscle_group_by_id,
     select_muscle_group_by_name,
     insert_exercise_metadata,
     insert_secondary_muscle_groups,
     select_combined,
+    metadata_by_name_inner_join_primary_muscle_group,
 )
 from gym_tracker.domain.model import ExerciseMetadata
 
@@ -22,24 +22,14 @@ class PostgresSQLRepo:
         self.conn = connection
 
     def get_exercise_metadata_by_name(self, name: str) -> ExerciseMetadata:
-        """
-        - First, select exercise metadata from exercise_metadata table -> (id, name, primary_muscle_group_id)
-        - Select muscle_group FROM muscle_groups -> (muscle_group)
-        - Select secondary muscle group ids from metadata_secondary_muscle_group -> [(muscle_group_id)]
-        - Select muscle_groups FROM muscle_groups -> [(muscle_group)]
-        :param name:
-        :return:
-        """
         with self.conn.cursor() as cursor:
-            cursor.execute(select_exercise_metadata_by_name, (name,))
-            # id, name, primary_muscle_group_id
+            cursor.execute(metadata_by_name_inner_join_primary_muscle_group, (name,))
             exercise_metadata_tuple = cursor.fetchone()
-            cursor.execute(select_muscle_group_by_id, (exercise_metadata_tuple[0][2],))
-            muscle_group_name = cursor.fetchone()[0]
-            cursor.execute(select_combined, (exercise_metadata_tuple[0][0],))
+            muscle_group_name = exercise_metadata_tuple[2]
+            cursor.execute(select_combined, (exercise_metadata_tuple[0],))
             secondary_musclegroups = cursor.fetchall()
             exercise_metadata = ExerciseMetadata(
-                name=exercise_metadata_tuple[0][1],
+                name=exercise_metadata_tuple[1],
                 primary_muscle_group=muscle_group_name,
                 secondary_muscle_groups=[
                     muscle_group[0] for muscle_group in secondary_musclegroups
@@ -53,9 +43,6 @@ class PostgresSQLRepo:
                 f"Metadata not added: Already exists for {exercise_metadata.name}"
             )
             return
-        # name, ya lo tenemos
-        # primary muscle group -> hay que hacer un select de la id a través del nombre
-        # secondary -> lo mismo que lo de arriba
         with self.conn.cursor() as cursor:
             cursor.execute(
                 select_muscle_group_by_name,

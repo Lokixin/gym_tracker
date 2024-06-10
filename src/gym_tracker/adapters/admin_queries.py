@@ -14,9 +14,6 @@ create_muscle_group_table = """CREATE TABLE muscle_groups (
 select_muscle_group_by_name = (
     """SELECT id, muscle_group FROM muscle_groups WHERE muscle_group = ANY(%s);"""
 )
-select_muscle_group_by_id = """
-    SELECT muscle_group FROM muscle_groups WHERE id=%s;
-"""
 
 
 insert_muscle_group = """INSERT INTO muscle_groups (muscle_group) VALUES (%s);"""
@@ -36,7 +33,23 @@ insert_exercise_metadata = """
 """
 
 select_exercise_metadata = """SELECT * FROM exercises_metadata"""
-select_exercise_metadata_by_name = """SELECT (id, name, primary_muscle_group_id) FROM exercises_metadata WHERE name LIKE %s"""
+select_exercise_metadata_by_name = """
+    SELECT (id, name, primary_muscle_group_id) FROM exercises_metadata WHERE name LIKE %s
+"""
+select_muscle_group_by_id = """
+    SELECT muscle_group FROM muscle_groups WHERE id=%s;
+"""
+metadata_by_name_inner_join_primary_muscle_group = """
+    SELECT exercises_metadata.id, exercises_metadata.name, muscle_groups.muscle_group FROM exercises_metadata 
+    INNER JOIN muscle_groups ON exercises_metadata.primary_muscle_group_id=muscle_groups.id
+    WHERE exercises_metadata.name LIKE %s;
+"""
+
+select_combined = """
+    SELECT muscle_group FROM muscle_groups WHERE id = ANY(
+        SELECT muscle_group_id FROM metadata_secondary_muscle_group WHERE metadata_id = %s
+    );
+"""
 
 create_metadata_and_secondary_table = """
 CREATE TABLE metadata_secondary_muscle_group (
@@ -61,11 +74,6 @@ select_any_muscle_groups = """
     SELECT muscle_group FROM muscle_groups WHERE id = ANY(%s);
 """
 
-select_combined = """
-    SELECT muscle_group FROM muscle_groups WHERE id = ANY(
-        SELECT muscle_group_id FROM metadata_secondary_muscle_group WHERE metadata_id = %s
-    );
-"""
 
 
 def insert_exercise_metadata_by_name(
