@@ -8,13 +8,32 @@ from gym_tracker.adapters.admin_queries import (
     select_muscle_group_by_name,
     insert_exercise_metadata,
     insert_secondary_muscle_groups,
-    select_combined,
-    metadata_by_name_inner_join_primary_muscle_group,
 )
 from gym_tracker.domain.model import ExerciseMetadata
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+select_metadata_by_name = """
+    WITH exercise_data AS (
+        SELECT 
+            em.id,
+            em.name AS exercise_name,
+            mg.muscle_group AS primary_muscle_group
+        FROM exercises_metadata em
+        INNER JOIN muscle_groups mg ON em.primary_muscle_group_id = mg.id
+        WHERE em.name LIKE %s
+    )
+    SELECT 
+        ed.exercise_name,
+        ed.primary_muscle_group,
+        ARRAY_AGG(mg2.muscle_group) AS secondary_muscle_groups
+    FROM exercise_data ed
+    LEFT JOIN metadata_secondary_muscle_group msmg ON ed.id = msmg.metadata_id
+    LEFT JOIN muscle_groups mg2 ON msmg.muscle_group_id = mg2.id
+    GROUP BY ed.exercise_name, ed.primary_muscle_group;
+"""
 
 
 class PostgresSQLRepo:
@@ -23,17 +42,12 @@ class PostgresSQLRepo:
 
     def get_exercise_metadata_by_name(self, name: str) -> ExerciseMetadata:
         with self.conn.cursor() as cursor:
-            cursor.execute(metadata_by_name_inner_join_primary_muscle_group, (name,))
-            exercise_metadata_tuple = cursor.fetchone()
-            muscle_group_name = exercise_metadata_tuple[2]
-            cursor.execute(select_combined, (exercise_metadata_tuple[0],))
-            secondary_musclegroups = cursor.fetchall()
+            cursor.execute(select_metadata_by_name, (name,))
+            metadata_tuple = cursor.fetchone()
             exercise_metadata = ExerciseMetadata(
-                name=exercise_metadata_tuple[1],
-                primary_muscle_group=muscle_group_name,
-                secondary_muscle_groups=[
-                    muscle_group[0] for muscle_group in secondary_musclegroups
-                ],
+                name=metadata_tuple[0],
+                primary_muscle_group=metadata_tuple[1],
+                secondary_muscle_groups=metadata_tuple[2],
             )
             return exercise_metadata
 
@@ -90,7 +104,5 @@ if __name__ == "__main__":
     connection_string = "dbname=workouts host=localhost user=admin password=admin"
     with psycopg.connect(connection_string, autocommit=True) as conn:
         repo = PostgresSQLRepo(connection=conn)
-        exercise_metadata = repo.get_exercise_metadata_by_name("bench press")
+        exercise_metadata = repo.get_exercise_metadata_by_name("pull ups")
         print(exercise_metadata)
-        pull_ups_metadata_from_db = repo.get_exercise_metadata_by_name("pull ups")
-        print(pull_ups_metadata_from_db)

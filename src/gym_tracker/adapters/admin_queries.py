@@ -39,11 +39,7 @@ select_exercise_metadata_by_name = """
 select_muscle_group_by_id = """
     SELECT muscle_group FROM muscle_groups WHERE id=%s;
 """
-metadata_by_name_inner_join_primary_muscle_group = """
-    SELECT exercises_metadata.id, exercises_metadata.name, muscle_groups.muscle_group FROM exercises_metadata 
-    INNER JOIN muscle_groups ON exercises_metadata.primary_muscle_group_id=muscle_groups.id
-    WHERE exercises_metadata.name LIKE %s;
-"""
+
 
 select_combined = """
     SELECT muscle_group FROM muscle_groups WHERE id = ANY(
@@ -73,7 +69,6 @@ select_secondary_muscle_groups = """
 select_any_muscle_groups = """
     SELECT muscle_group FROM muscle_groups WHERE id = ANY(%s);
 """
-
 
 
 def insert_exercise_metadata_by_name(
