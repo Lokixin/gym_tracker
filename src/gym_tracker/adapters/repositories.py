@@ -1,4 +1,5 @@
 import logging
+from typing import LiteralString
 
 import psycopg
 from psycopg import Connection
@@ -6,7 +7,7 @@ from psycopg import Connection
 from gym_tracker.adapters.admin_queries import (
     select_exercise_metadata_by_name,
 )
-from gym_tracker.domain.model import ExerciseMetadata, MuscleGroup
+from gym_tracker.domain.model import ExerciseMetadata, MuscleGroup, Workout, Exercise
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -32,7 +33,7 @@ select_metadata_by_name = """
     GROUP BY ed.exercise_name, ed.primary_muscle_group;
 """
 
-find_muscle_groups_ids = """
+find_muscle_groups_ids: LiteralString = """
     WITH primary_insert AS (
         INSERT 
             INTO exercises_metadata (name, primary_muscle_group_id)
@@ -84,27 +85,24 @@ class PostgresSQLRepo:
             result = cursor.fetchone()
             return result
 
-    def _check_if_metadata_already_exists(self, exercise_name: str) -> bool:
+    def add_workout(self, workout: Workout) -> int:
+        add_workout_query: LiteralString = """
+            INSERT INTO WORKOUTS (date, duration) values (%s, %s)
+            RETURNING id;
+        """
         with self.conn.cursor() as cursor:
-            cursor.execute(select_exercise_metadata_by_name, (exercise_name,))
-            if cursor.fetchone():
-                return True
-            return False
+            cursor.execute(add_workout_query, (workout.date, workout.duration))
+            inserted_id = cursor.fetchone()[0]
+            return inserted_id
+
+    def add_exercise_to_workout(self, exercise: Exercise, workout_id: int) -> int:
+        pass
 
 
 if __name__ == "__main__":
     connection_string = "dbname=workouts host=localhost user=admin password=admin"
     with psycopg.connect(connection_string, autocommit=True) as conn:
         repo = PostgresSQLRepo(connection=conn)
-
-        exercise_metadata = ExerciseMetadata(
-            name="back squat",
-            primary_muscle_group=MuscleGroup.QUADRICEPS,
-            secondary_muscle_groups=[
-                MuscleGroup.GLUTEUS,
-                MuscleGroup.CALVES,
-                MuscleGroup.BACK,
-            ],
-        )
-        res = repo.add_exercise_metadata(exercise_metadata)
+        workout = Workout(exercises=[], duration=0)
+        res = repo.add_workout(workout)
         print(res)

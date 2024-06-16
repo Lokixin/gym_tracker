@@ -53,9 +53,12 @@ class Exercise:
 
 
 class Workout:
-    def __init__(self, exercises: list[Exercise], date: str | None = None) -> None:
+    def __init__(
+        self, exercises: list[Exercise], duration: int, date: str | None = None
+    ) -> None:
         self.exercises = exercises
         self.date = self._get_formatted_date(date)
+        self.duration = duration
 
     def add_exercise(self, exercise: Exercise) -> None:
         self.exercises.append(exercise)

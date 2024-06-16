@@ -1,3 +1,5 @@
+from typing import LiteralString
+
 import psycopg
 from psycopg import Cursor
 
@@ -70,6 +72,25 @@ select_any_muscle_groups = """
     SELECT muscle_group FROM muscle_groups WHERE id = ANY(%s);
 """
 
+create_workouts_table = """
+CREATE TABLE workouts 
+    (
+        id SERIAL PRIMARY KEY,
+        date DATE NOT NULL,
+        duration INT NOT NULL
+    );
+"""
+
+create_full_exercise_table: LiteralString = """
+    CREATE TABLE full_exercises (
+        id SERIAL PRIMARY KEY,
+        metadata_id INT NOT NULL,
+        workout_id INT NOT NULL,
+        FOREIGN KEY(metadata_id) REFERENCES exercises_metadata(id),
+        FOREIGN KEY(workout_id) REFERENCES workouts(id)
+    )
+"""
+
 
 def insert_exercise_metadata_by_name(
     cursor: psycopg.Cursor, exercise_name: str, muscle_group: MuscleGroup
@@ -119,3 +140,20 @@ def get_exercise_metadata_by_name(cursor: Cursor, name: str) -> ExerciseMetadata
         ],
     )
     return exercise_metadata
+
+
+if __name__ == "__main__":
+    connection_string = "dbname=workouts host=localhost user=admin password=admin"
+    with psycopg.connect(connection_string, autocommit=True) as conn:
+        with conn.cursor() as cursor:
+            my_query: LiteralString = """
+                CREATE TABLE exercise_sets (
+                    id SERIAL PRIMARY KEY,
+                    weight REAL NOT NULL,
+                    repetitions INT NOT NULL,
+                    to_failure BOOL,
+                    full_exercise_id INT NOT NULL,
+                    FOREIGN KEY(full_exercise_id) REFERENCES full_exercises(id)
+                )
+            """
+            cursor.execute(my_query)
