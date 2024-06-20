@@ -4,10 +4,12 @@ from typing import LiteralString
 import psycopg
 from psycopg import Connection
 
-from gym_tracker.adapters.admin_queries import (
-    select_exercise_metadata_by_name,
+from gym_tracker.domain.model import (
+    ExerciseMetadata,
+    Workout,
+    Exercise,
+    ExerciseSet,
 )
-from gym_tracker.domain.model import ExerciseMetadata, MuscleGroup, Workout, Exercise
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -96,13 +98,62 @@ class PostgresSQLRepo:
             return inserted_id
 
     def add_exercise_to_workout(self, exercise: Exercise, workout_id: int) -> int:
-        pass
+        exercise_name = exercise.exercise_metadata.name
+        query: LiteralString = """
+            INSERT INTO full_exercises (metadata_id, workout_id) 
+            VALUES ((SELECT id FROM exercises_metadata WHERE name LIKE %s), %s)
+            RETURNING id;
+        """
+        with self.conn.cursor() as cursor:
+            cursor.execute(query, (exercise_name, workout_id))
+            inserted_id = cursor.fetchone()[0]
+            return inserted_id
+
+    def add_sets_to_exercise(
+        self, exercise_sets: list[ExerciseSet], exercise_id: int
+    ) -> None:
+        query: LiteralString = """
+            INSERT INTO exercise_sets (weight, repetitions, to_failure, full_exercise_id) 
+            VALUES (
+                %s, %s, %s, %s
+            );
+        """
+        with self.conn.cursor() as cursor:
+            cursor.executemany(
+                query,
+                [
+                    (
+                        exercise_set.weight,
+                        exercise_set.repetitions,
+                        exercise_set.to_failure,
+                        exercise_id,
+                    )
+                    for exercise_set in exercise_sets
+                ],
+            )
+
+    def add_exercise_with_sets_to_workout(
+        self, exercise: Exercise, workout_id: int
+    ) -> int:
+        exercise_id = self.add_exercise_to_workout(
+            exercise=exercise, workout_id=workout_id
+        )
+        self.add_sets_to_exercise(
+            exercise_sets=exercise.exercise_sets, exercise_id=exercise_id
+        )
+        return exercise_id
 
 
 if __name__ == "__main__":
     connection_string = "dbname=workouts host=localhost user=admin password=admin"
     with psycopg.connect(connection_string, autocommit=True) as conn:
         repo = PostgresSQLRepo(connection=conn)
-        workout = Workout(exercises=[], duration=0)
-        res = repo.add_workout(workout)
-        print(res)
+        exercise_id = 2
+        exercise = Exercise(
+            exercise_metadata=repo.get_exercise_metadata_by_name("pull ups"),
+            exercise_sets=[
+                ExerciseSet(weight=10, repetitions=10, to_failure=False),
+                ExerciseSet(weight=20, repetitions=4, to_failure=True),
+            ],
+        )
+        repo.add_exercise_with_sets_to_workout(exercise=exercise, workout_id=1)
