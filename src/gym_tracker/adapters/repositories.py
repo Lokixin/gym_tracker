@@ -143,17 +143,46 @@ class PostgresSQLRepo:
         )
         return exercise_id
 
+    def get_workout_by_date(self, date: str):
+        """
+        Esto va a ser una fumada monumental:
+            1. workouts WHERE date = date. Return workout_id
+            2. full_exercises SELECT all exercises WHERE workout_id = workout_id
+            3. exercise_sets SELECT all exercise_sets WHERE id = ANY(full_exercises_ids)
+            4. metadata
+            5. musclegroups
+        """
+        query: LiteralString = """
+            WITH workout AS (
+                SELECT id, date, duration FROM workouts WHERE date = %s
+            ),
+            metadata AS (
+                SELECT id, metadata_id FROM full_exercises WHERE workout_id = (SELECT id FROM workout)
+            )
+            SELECT 
+                exercise_sets.weight, 
+                exercise_sets.repetitions,
+                exercise_sets.to_failure, 
+                exercise_sets.full_exercise_id, 
+                full_exercises.metadata_id,
+                exercises_metadata.id,
+                exercises_metadata.name,
+                muscle_groups.muscle_group
+            FROM exercise_sets 
+                LEFT JOIN full_exercises ON exercise_sets.full_exercise_id = full_exercises.id
+                LEFT JOIN exercises_metadata ON exercises_metadata.id = full_exercises.metadata_id
+                LEFT JOIN muscle_groups ON muscle_groups.id = exercises_metadata.primary_muscle_group_id
+            WHERE full_exercise_id = ANY(SELECT id FROM metadata)
+        """
+        with self.conn.cursor() as cursor:
+            cursor.execute(query, (date,))
+            res = cursor.fetchall()
+            return res
+
 
 if __name__ == "__main__":
     connection_string = "dbname=workouts host=localhost user=admin password=admin"
     with psycopg.connect(connection_string, autocommit=True) as conn:
         repo = PostgresSQLRepo(connection=conn)
-        exercise_id = 2
-        exercise = Exercise(
-            exercise_metadata=repo.get_exercise_metadata_by_name("pull ups"),
-            exercise_sets=[
-                ExerciseSet(weight=10, repetitions=10, to_failure=False),
-                ExerciseSet(weight=20, repetitions=4, to_failure=True),
-            ],
-        )
-        repo.add_exercise_with_sets_to_workout(exercise=exercise, workout_id=1)
+        res = repo.get_workout_by_date(date="2024-06-16")
+        print(res)
