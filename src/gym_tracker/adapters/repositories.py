@@ -144,14 +144,6 @@ class PostgresSQLRepo:
         return exercise_id
 
     def get_workout_by_date(self, date: str):
-        """
-        Esto va a ser una fumada monumental:
-            1. workouts WHERE date = date. Return workout_id
-            2. full_exercises SELECT all exercises WHERE workout_id = workout_id
-            3. exercise_sets SELECT all exercise_sets WHERE id = ANY(full_exercises_ids)
-            4. metadata
-            5. musclegroups
-        """
         query: LiteralString = """
             WITH workout AS (
                 SELECT id, date, duration FROM workouts WHERE date = %s
@@ -163,16 +155,25 @@ class PostgresSQLRepo:
                 exercise_sets.weight, 
                 exercise_sets.repetitions,
                 exercise_sets.to_failure, 
-                exercise_sets.full_exercise_id, 
-                full_exercises.metadata_id,
-                exercises_metadata.id,
                 exercises_metadata.name,
-                muscle_groups.muscle_group
+                muscle_groups.muscle_group,
+                ARRAY_AGG(mg2.muscle_group) AS secondary_muscle_groups
             FROM exercise_sets 
                 LEFT JOIN full_exercises ON exercise_sets.full_exercise_id = full_exercises.id
                 LEFT JOIN exercises_metadata ON exercises_metadata.id = full_exercises.metadata_id
                 LEFT JOIN muscle_groups ON muscle_groups.id = exercises_metadata.primary_muscle_group_id
+                LEFT JOIN metadata_secondary_muscle_group msmg ON exercises_metadata.id = msmg.metadata_id
+                LEFT JOIN muscle_groups mg2 ON msmg.muscle_group_id = mg2.id
             WHERE full_exercise_id = ANY(SELECT id FROM metadata)
+                GROUP BY exercises_metadata.name, 
+                exercises_metadata.primary_muscle_group_id, 
+                exercise_sets.weight, 
+                exercise_sets.repetitions, 
+                exercise_sets.to_failure, 
+                exercise_sets.full_exercise_id, 
+                full_exercises.metadata_id, 
+                exercises_metadata.id, 
+                muscle_groups.muscle_group;
         """
         with self.conn.cursor() as cursor:
             cursor.execute(query, (date,))
