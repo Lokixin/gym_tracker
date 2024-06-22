@@ -63,6 +63,17 @@ class Workout:
     def add_exercise(self, exercise: Exercise) -> None:
         self.exercises.append(exercise)
 
+    def add_set_to_exercise(
+        self, exercise_set: ExerciseSet, exercise_metadata: ExerciseMetadata
+    ) -> None:
+        for exercise in self.exercises:
+            if exercise.exercise_metadata.name == exercise_metadata.name:
+                exercise.add_exercise_set(exercise_set)
+                return
+        self.add_exercise(
+            Exercise(exercise_metadata=exercise_metadata, exercise_sets=[exercise_set])
+        )
+
     def _get_formatted_date(self, date: str | None) -> str:
         if not date:
             return pendulum.now().to_rfc3339_string()
