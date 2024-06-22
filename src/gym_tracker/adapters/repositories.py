@@ -4,6 +4,7 @@ from typing import LiteralString
 import psycopg
 from psycopg import Connection
 
+from gym_tracker.adapters.mappers import pgsql_to_workout_object_mapper
 from gym_tracker.domain.model import (
     ExerciseMetadata,
     Workout,
@@ -152,7 +153,7 @@ class PostgresSQLRepo:
                 SELECT id, metadata_id FROM full_exercises WHERE workout_id = (SELECT id FROM workout)
             )
             SELECT 
-                exercise_sets.weight, 
+                exercise_sets.weight,
                 exercise_sets.repetitions,
                 exercise_sets.to_failure, 
                 exercises_metadata.name,
@@ -175,10 +176,20 @@ class PostgresSQLRepo:
                 exercises_metadata.id, 
                 muscle_groups.muscle_group;
         """
+        workout_date_duration_query: LiteralString = """
+            SELECT date, duration FROM workouts WHERE date = %s
+        """
         with self.conn.cursor() as cursor:
             cursor.execute(query, (date,))
-            res = cursor.fetchall()
-            return res
+            workout_exercises = cursor.fetchall()
+            cursor.execute(workout_date_duration_query, (date,))
+            workout_info = cursor.fetchone()
+            workout = pgsql_to_workout_object_mapper(
+                psql_workout=workout_exercises,
+                date=workout_info[0],
+                duration=workout_info[-1],
+            )
+            return workout
 
 
 if __name__ == "__main__":
