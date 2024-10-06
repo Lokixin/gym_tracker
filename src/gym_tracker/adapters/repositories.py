@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-select_metadata_by_name = """
+select_metadata_by_name: LiteralString = """
     WITH exercise_data AS (
         SELECT 
             em.id,

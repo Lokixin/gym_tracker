@@ -1,3 +1,4 @@
+import datetime
 from enum import StrEnum, auto
 from dataclasses import dataclass
 from typing import cast
@@ -38,6 +39,12 @@ class ExerciseSet:
     repetitions: int
     to_failure: bool | None = False
 
+    def __str__(self) -> str:
+        set_str = f"{self.weight}kgs x {self.repetitions}"
+        if not self.to_failure:
+            return set_str
+        return f"{set_str} (reached failure)"
+
 
 class Exercise:
     def __init__(
@@ -47,6 +54,13 @@ class Exercise:
     ) -> None:
         self.exercise_metadata = exercise_metadata
         self.exercise_sets = exercise_sets
+
+    def __str__(self) -> str:
+        exercise_str = f"\t{self.exercise_metadata.name}: "
+        for exercise_set in self.exercise_sets:
+            exercise_str += f"\n\t\t- {exercise_set}"
+        exercise_str += "\n\n"
+        return exercise_str
 
     def add_exercise_set(self, exercise_set: ExerciseSet) -> None:
         self.exercise_sets.append(exercise_set)
@@ -59,6 +73,15 @@ class Workout:
         self.exercises = exercises
         self.date = self._get_formatted_date(date)
         self.duration = duration
+
+    def __str__(self) -> str:
+        workout_str = f"Workout from day {self.simple_date} "
+        if self.duration:
+            workout_str += f"({self.duration}) minutes"
+        workout_str += ":\n"
+        for exercise in self.exercises:
+            workout_str += str(exercise)
+        return workout_str
 
     def add_exercise(self, exercise: Exercise) -> None:
         self.exercises.append(exercise)
@@ -79,3 +102,7 @@ class Workout:
             return pendulum.now().to_rfc3339_string()
         parsed_date = cast(DateTime, pendulum.parse(date))
         return parsed_date.to_rfc3339_string()
+
+    @property
+    def simple_date(self) -> str:
+        return datetime.datetime.fromisoformat(self.date).strftime("%Y-%m-%d")
