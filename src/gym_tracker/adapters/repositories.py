@@ -182,8 +182,12 @@ class PostgresSQLRepo:
         with self.conn.cursor() as cursor:
             cursor.execute(query, (date,))
             workout_exercises = cursor.fetchall()
+            if not workout_exercises:
+                return None
             cursor.execute(workout_date_duration_query, (date,))
             workout_info = cursor.fetchone()
+            if not workout_info:
+                return None
             workout = pgsql_to_workout_object_mapper(
                 psql_workout=workout_exercises,
                 date=workout_info[0],
