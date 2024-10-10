@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException, Query, status
 from fastapi.routing import APIRouter
 from starlette.responses import JSONResponse
 
-from gym_tracker.adapters.mappers import workout_object_to_dto
+from gym_tracker.adapters.mappers import workout_from_db_to_dto
 from gym_tracker.adapters.repositories import PostgresSQLRepo
 from gym_tracker.domain.model import Workout
 from gym_tracker.entrypoints.dependencies import get_workouts_repo
@@ -24,26 +24,24 @@ date_query_parameter = Query(description="date of the workout", example="2024-10
 def get_workout_by_date(
     date: str, workouts_repo: PostgresSQLRepo = Depends(get_workouts_repo)
 ) -> WorkoutDTO:
-    workout = workouts_repo.get_workout_by_date(date)
-    if not workout:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"message": f"Workout Not Found for date {date}"},
-        )
-    return workout_object_to_dto(workout)
+    if workout := workouts_repo.get_workout_by_date(date):
+        return workout_from_db_to_dto(exercises=workout[0], workout_metadata=workout[1])
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail={"message": f"Workout Not Found for date {date}"},
+    )
 
 
 @workouts_router.get("/by_id/{workout_id}", response_model=WorkoutDTO)
 def get_workout_by_id(
     workout_id: int, workouts_repo: PostgresSQLRepo = Depends(get_workouts_repo)
 ) -> WorkoutDTO:
-    workout = workouts_repo.get_workout_by_id(workout_id)
-    if not workout:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"message": f"Workout Not Found for id {workout_id}"},
-        )
-    return workout_object_to_dto(workout)
+    if workout := workouts_repo.get_workout_by_id(workout_id):
+        return workout_from_db_to_dto(exercises=workout[0], workout_metadata=workout[1])
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail={"message": f"Workout Not Found for id {workout_id}"},
+    )
 
 
 @workouts_router.post("/by_date")
