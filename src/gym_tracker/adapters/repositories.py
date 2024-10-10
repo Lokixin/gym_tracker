@@ -159,6 +159,57 @@ class PostgresSQLRepo:
                 exercises_metadata.name,
                 muscle_groups.muscle_group,
                 ARRAY_AGG(mg2.muscle_group) AS secondary_muscle_groups
+            FROM exercise_sets
+                LEFT JOIN full_exercises ON exercise_sets.full_exercise_id = full_exercises.id
+                LEFT JOIN exercises_metadata ON exercises_metadata.id = full_exercises.metadata_id
+                LEFT JOIN muscle_groups ON muscle_groups.id = exercises_metadata.primary_muscle_group_id
+                LEFT JOIN metadata_secondary_muscle_group msmg ON exercises_metadata.id = msmg.metadata_id
+                LEFT JOIN muscle_groups mg2 ON msmg.muscle_group_id = mg2.id
+            WHERE full_exercise_id = ANY(SELECT id FROM metadata)
+                GROUP BY exercises_metadata.name, 
+                exercises_metadata.primary_muscle_group_id, 
+                exercise_sets.id,
+                exercise_sets.weight, 
+                exercise_sets.repetitions, 
+                exercise_sets.to_failure, 
+                exercise_sets.full_exercise_id, 
+                full_exercises.metadata_id, 
+                exercises_metadata.id, 
+                muscle_groups.muscle_group
+            ORDER BY exercise_sets.id;
+        """
+        workout_date_duration_query: LiteralString = """
+            SELECT date, duration FROM workouts WHERE date = %s
+        """
+        with self.conn.cursor() as cursor:
+            cursor.execute(query, (date,))
+            workout_exercises = cursor.fetchall()
+            cursor.execute(workout_date_duration_query, (date,))
+            workout_info = cursor.fetchone()
+            if not workout_info:
+                return None
+            workout = pgsql_to_workout_object_mapper(
+                psql_workout=workout_exercises,
+                date=workout_info[0],
+                duration=workout_info[-1],
+            )
+            return workout
+
+    def get_workout_by_id(self, workout_id: int):
+        query: LiteralString = """
+            WITH workout AS (
+                SELECT id, date, duration FROM workouts WHERE id = %s
+            ),
+            metadata AS (
+                SELECT id, metadata_id FROM full_exercises WHERE workout_id = (SELECT id FROM workout)
+            )
+            SELECT 
+                exercise_sets.weight,
+                exercise_sets.repetitions,
+                exercise_sets.to_failure, 
+                exercises_metadata.name,
+                muscle_groups.muscle_group,
+                ARRAY_AGG(mg2.muscle_group) AS secondary_muscle_groups
             FROM exercise_sets 
                 LEFT JOIN full_exercises ON exercise_sets.full_exercise_id = full_exercises.id
                 LEFT JOIN exercises_metadata ON exercises_metadata.id = full_exercises.metadata_id
@@ -177,13 +228,15 @@ class PostgresSQLRepo:
                 muscle_groups.muscle_group;
         """
         workout_date_duration_query: LiteralString = """
-            SELECT date, duration FROM workouts WHERE date = %s
+            SELECT date, duration FROM workouts WHERE id = %s
         """
         with self.conn.cursor() as cursor:
-            cursor.execute(query, (date,))
+            cursor.execute(query, (workout_id,))
             workout_exercises = cursor.fetchall()
-            cursor.execute(workout_date_duration_query, (date,))
+            cursor.execute(workout_date_duration_query, (workout_id,))
             workout_info = cursor.fetchone()
+            if not workout_info:
+                return None
             workout = pgsql_to_workout_object_mapper(
                 psql_workout=workout_exercises,
                 date=workout_info[0],
