@@ -1,4 +1,5 @@
 import logging
+from collections import namedtuple
 
 import psycopg
 from psycopg import Connection
@@ -24,6 +25,11 @@ from gym_tracker.domain.model import (
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+ExerciseRow = namedtuple(
+    "ExerciseRow", "weight, reps, to_failure, name, primary_muscle_group, secondary_muscle_groups"
+)
+WorkoutInfoRow = namedtuple("WorkoutInfoRow", "date, duration")
 
 
 class PostgresSQLRepo:
@@ -95,20 +101,16 @@ class PostgresSQLRepo:
         )
         return exercise_id
 
-    def get_workout_by_date(self, date: str):
+    def get_workout_by_date(self, date: str) -> (list[ExerciseRow], WorkoutInfoRow):
         with self.conn.cursor() as cursor:
             cursor.execute(select_workout_by_date, (date,))
-            workout_exercises = cursor.fetchall()
+            exercises = [ExerciseRow(*_row) for _row in cursor.fetchall()]
             cursor.execute(select_workout_date_and_duration, (date,))
-            workout_info = cursor.fetchone()
+            workout_info = WorkoutInfoRow(*cursor.fetchone())
             if not workout_info:
                 return None
-            workout = pgsql_to_workout_object_mapper(
-                psql_workout=workout_exercises,
-                date=workout_info[0],
-                duration=workout_info[-1],
-            )
-            return workout
+
+            return exercises, workout_info
 
     def get_workout_by_id(self, workout_id: int):
         with self.conn.cursor() as cursor:
