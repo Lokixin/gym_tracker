@@ -3,7 +3,7 @@ ALL_PACKAGES := src tests
 .PHONY : reformat lint unit app kill
 
 lint:
-	poetry run ruff check $(ALL_PACKAGES) &
+	poetry run ruff check $(ALL_PACKAGES) --fix &
 	poetry run mypy $(ALL_PACKAGES)
 
 reformat:
