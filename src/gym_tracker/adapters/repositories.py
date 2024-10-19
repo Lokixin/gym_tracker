@@ -1,10 +1,20 @@
 import logging
-from typing import LiteralString
+from collections import namedtuple
 
 import psycopg
 from psycopg import Connection
 
-from gym_tracker.adapters.mappers import pgsql_to_workout_object_mapper
+from gym_tracker.adapters.workouts_queries import (
+    select_metadata_by_name,
+    insert_exercise_metadata,
+    insert_workout,
+    insert_exercise_to_workout,
+    insert_sets_to_exercise,
+    select_workout_by_date,
+    select_workout_date_and_duration,
+    select_workout_by_id,
+    select_date_and_duration_by_id,
+)
 from gym_tracker.domain.model import (
     ExerciseMetadata,
     Workout,
@@ -15,49 +25,11 @@ from gym_tracker.domain.model import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
-select_metadata_by_name: LiteralString = """
-    WITH exercise_data AS (
-        SELECT 
-            em.id,
-            em.name AS exercise_name,
-            mg.muscle_group AS primary_muscle_group
-        FROM exercises_metadata em
-        INNER JOIN muscle_groups mg ON em.primary_muscle_group_id = mg.id
-        WHERE em.name LIKE %s
-    )
-    SELECT 
-        ed.exercise_name,
-        ed.primary_muscle_group,
-        ARRAY_AGG(mg2.muscle_group) AS secondary_muscle_groups
-    FROM exercise_data ed
-    LEFT JOIN metadata_secondary_muscle_group msmg ON ed.id = msmg.metadata_id
-    LEFT JOIN muscle_groups mg2 ON msmg.muscle_group_id = mg2.id
-    GROUP BY ed.exercise_name, ed.primary_muscle_group;
-"""
-
-find_muscle_groups_ids: LiteralString = """
-    WITH primary_insert AS (
-        INSERT 
-            INTO exercises_metadata (name, primary_muscle_group_id)
-        SELECT 
-            %s AS exercise_name,
-            id AS primary_muscle_id
-        FROM muscle_groups 
-            WHERE muscle_groups.muscle_group = %s
-        RETURNING id
-    ),
-    secondary_insert AS (
-        INSERT 
-            INTO metadata_secondary_muscle_group (metadata_id, muscle_group_id)
-        SELECT
-            primary_insert.id,
-            muscle_groups.id
-        FROM primary_insert, muscle_groups
-            WHERE muscle_groups.muscle_group = ANY(%s)
-    )
-    SELECT id FROM primary_insert
-"""
+ExerciseRow = namedtuple(
+    "ExerciseRow",
+    "weight, reps, to_failure, name, primary_muscle_group, secondary_muscle_groups",
+)
+WorkoutInfoRow = namedtuple("WorkoutInfoRow", "date, duration")
 
 
 class PostgresSQLRepo:
@@ -82,46 +54,31 @@ class PostgresSQLRepo:
                 str(mg.value) for mg in exercise_metadata.secondary_muscle_groups
             ]
             cursor.execute(
-                find_muscle_groups_ids,
+                insert_exercise_metadata,
                 [exercise_metadata.name, primary_muscle_group, secondary_muscle_group],
             )
             result = cursor.fetchone()
             return result
 
     def add_workout(self, workout: Workout) -> int:
-        add_workout_query: LiteralString = """
-            INSERT INTO WORKOUTS (date, duration) values (%s, %s)
-            RETURNING id;
-        """
         with self.conn.cursor() as cursor:
-            cursor.execute(add_workout_query, (workout.date, workout.duration))
+            cursor.execute(insert_workout, (workout.date, workout.duration))
             inserted_id = cursor.fetchone()[0]
             return inserted_id
 
     def add_exercise_to_workout(self, exercise: Exercise, workout_id: int) -> int:
         exercise_name = exercise.exercise_metadata.name
-        query: LiteralString = """
-            INSERT INTO full_exercises (metadata_id, workout_id) 
-            VALUES ((SELECT id FROM exercises_metadata WHERE name LIKE %s), %s)
-            RETURNING id;
-        """
         with self.conn.cursor() as cursor:
-            cursor.execute(query, (exercise_name, workout_id))
+            cursor.execute(insert_exercise_to_workout, (exercise_name, workout_id))
             inserted_id = cursor.fetchone()[0]
             return inserted_id
 
     def add_sets_to_exercise(
         self, exercise_sets: list[ExerciseSet], exercise_id: int
     ) -> None:
-        query: LiteralString = """
-            INSERT INTO exercise_sets (weight, repetitions, to_failure, full_exercise_id) 
-            VALUES (
-                %s, %s, %s, %s
-            );
-        """
         with self.conn.cursor() as cursor:
             cursor.executemany(
-                query,
+                insert_sets_to_exercise,
                 [
                     (
                         exercise_set.weight,
@@ -144,110 +101,37 @@ class PostgresSQLRepo:
         )
         return exercise_id
 
-    def get_workout_by_date(self, date: str):
-        query: LiteralString = """
-            WITH workout AS (
-                SELECT id, date, duration FROM workouts WHERE date = %s
-            ),
-            metadata AS (
-                SELECT id, metadata_id FROM full_exercises WHERE workout_id = (SELECT id FROM workout)
-            )
-            SELECT 
-                exercise_sets.weight,
-                exercise_sets.repetitions,
-                exercise_sets.to_failure, 
-                exercises_metadata.name,
-                muscle_groups.muscle_group,
-                ARRAY_AGG(mg2.muscle_group) AS secondary_muscle_groups
-            FROM exercise_sets
-                LEFT JOIN full_exercises ON exercise_sets.full_exercise_id = full_exercises.id
-                LEFT JOIN exercises_metadata ON exercises_metadata.id = full_exercises.metadata_id
-                LEFT JOIN muscle_groups ON muscle_groups.id = exercises_metadata.primary_muscle_group_id
-                LEFT JOIN metadata_secondary_muscle_group msmg ON exercises_metadata.id = msmg.metadata_id
-                LEFT JOIN muscle_groups mg2 ON msmg.muscle_group_id = mg2.id
-            WHERE full_exercise_id = ANY(SELECT id FROM metadata)
-                GROUP BY exercises_metadata.name, 
-                exercises_metadata.primary_muscle_group_id, 
-                exercise_sets.id,
-                exercise_sets.weight, 
-                exercise_sets.repetitions, 
-                exercise_sets.to_failure, 
-                exercise_sets.full_exercise_id, 
-                full_exercises.metadata_id, 
-                exercises_metadata.id, 
-                muscle_groups.muscle_group
-            ORDER BY exercise_sets.id;
-        """
-        workout_date_duration_query: LiteralString = """
-            SELECT date, duration FROM workouts WHERE date = %s
-        """
+    def get_workout_by_date(
+        self, date: str
+    ) -> tuple[list[ExerciseRow], WorkoutInfoRow] | None:
         with self.conn.cursor() as cursor:
-            cursor.execute(query, (date,))
-            workout_exercises = cursor.fetchall()
-            cursor.execute(workout_date_duration_query, (date,))
-            workout_info = cursor.fetchone()
-            if not workout_info:
+            cursor.execute(select_workout_date_and_duration, (date,))
+            if workout_metadata := cursor.fetchone():
+                workout_info = WorkoutInfoRow(*workout_metadata)
+            else:
                 return None
-            workout = pgsql_to_workout_object_mapper(
-                psql_workout=workout_exercises,
-                date=workout_info[0],
-                duration=workout_info[-1],
-            )
-            return workout
+            cursor.execute(select_workout_by_date, (date,))
+            exercises = [ExerciseRow(*_row) for _row in cursor.fetchall()]
+            return exercises, workout_info
 
-    def get_workout_by_id(self, workout_id: int):
-        query: LiteralString = """
-            WITH workout AS (
-                SELECT id, date, duration FROM workouts WHERE id = %s
-            ),
-            metadata AS (
-                SELECT id, metadata_id FROM full_exercises WHERE workout_id = (SELECT id FROM workout)
-            )
-            SELECT 
-                exercise_sets.weight,
-                exercise_sets.repetitions,
-                exercise_sets.to_failure, 
-                exercises_metadata.name,
-                muscle_groups.muscle_group,
-                ARRAY_AGG(mg2.muscle_group) AS secondary_muscle_groups
-            FROM exercise_sets 
-                LEFT JOIN full_exercises ON exercise_sets.full_exercise_id = full_exercises.id
-                LEFT JOIN exercises_metadata ON exercises_metadata.id = full_exercises.metadata_id
-                LEFT JOIN muscle_groups ON muscle_groups.id = exercises_metadata.primary_muscle_group_id
-                LEFT JOIN metadata_secondary_muscle_group msmg ON exercises_metadata.id = msmg.metadata_id
-                LEFT JOIN muscle_groups mg2 ON msmg.muscle_group_id = mg2.id
-            WHERE full_exercise_id = ANY(SELECT id FROM metadata)
-                GROUP BY exercises_metadata.name, 
-                exercises_metadata.primary_muscle_group_id, 
-                exercise_sets.weight, 
-                exercise_sets.repetitions, 
-                exercise_sets.to_failure, 
-                exercise_sets.full_exercise_id, 
-                full_exercises.metadata_id, 
-                exercises_metadata.id, 
-                muscle_groups.muscle_group;
-        """
-        workout_date_duration_query: LiteralString = """
-            SELECT date, duration FROM workouts WHERE id = %s
-        """
+    def get_workout_by_id(
+        self, workout_id: int
+    ) -> tuple[list[ExerciseRow], WorkoutInfoRow] | None:
         with self.conn.cursor() as cursor:
-            cursor.execute(query, (workout_id,))
-            workout_exercises = cursor.fetchall()
-            cursor.execute(workout_date_duration_query, (workout_id,))
-            workout_info = cursor.fetchone()
-            if not workout_info:
+            cursor.execute(select_date_and_duration_by_id, (workout_id,))
+            if workout_metadata := cursor.fetchone():
+                workout_info = WorkoutInfoRow(*workout_metadata)
+            else:
                 return None
-            workout = pgsql_to_workout_object_mapper(
-                psql_workout=workout_exercises,
-                date=workout_info[0],
-                duration=workout_info[-1],
-            )
-            return workout
+            cursor.execute(select_workout_by_id, (workout_id,))
+            exercises = [ExerciseRow(*_row) for _row in cursor.fetchall()]
+            cursor.execute(select_date_and_duration_by_id, (workout_id,))
+            return exercises, workout_info
 
 
 if __name__ == "__main__":
     connection_string = "dbname=workouts host=localhost user=admin password=admin"
     with psycopg.connect(connection_string, autocommit=True) as conn:
         repo = PostgresSQLRepo(connection=conn)
-        res = repo.get_workout_by_date(date="2024-06-16")
+        res = repo.get_workout_by_id(1)
         print(res)
