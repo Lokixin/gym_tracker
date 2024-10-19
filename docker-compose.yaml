@@ -1,6 +1,6 @@
 version: "3.9"
 services:
-  pg-workouts:
+  postgres:
     image: postgres:16.2-alpine
     restart: always
     volumes:
@@ -10,12 +10,19 @@ services:
     environment:
       POSTGRES_PASSWORD: admin
       POSTGRES_USER: admin
-
+  gymtracker:
+    build: .
+    ports:
+      - "5555:5555"
+    depends_on:
+      - postgres
+    volumes:
+      - .:/gym_tracker
   adminer:
     image: adminer
     restart: always
     ports:
-      - 8080:8080
+      - "8080:8080"
 
 volumes:
   pgdata:
