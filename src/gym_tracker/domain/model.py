@@ -7,6 +7,47 @@ import pendulum
 from pendulum import DateTime
 
 
+all_muscles = {
+    "Adductors",
+    "Abductors",
+    "Rotator Cuff (posterior)",
+    "Quads",
+    "Calves",
+    "Rotator Cuff",
+    "Front Deltoids",
+    "Lower back",
+    "Glutes",
+    "shoulder presses",
+    "Trapezius",
+    "2",
+    "Biceps",
+    "1",
+    "Rotator Cuffs",
+    "Obliques",
+    "push-ups",
+    "Triceps",
+    "Rotator Cuff (anterior)",
+    "muscle growth",
+    "Abs",
+    "Lateral Deltoid",
+    "Rear Deltoids",
+    "Hamstrings",
+    "3",
+    "squat training",
+    "Lateral Deltoids",
+    "Front Deltoid",
+    "Shoulders",
+    "Lower Back",
+    "Chest",
+    "Forearm Flexors",
+    "fix muscle imbalances",
+    "leg muscles",
+    "bench presses",
+    "Rear Deltoid",
+    "Lats",
+}
+
+
 class MuscleGroup(StrEnum):
     SHOULDERS = auto()
     BACK = auto()
