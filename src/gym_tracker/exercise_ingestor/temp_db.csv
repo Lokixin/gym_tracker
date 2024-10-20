@@ -1,0 +1,288 @@
+name,primary_groups,secondary_groups
+Band-Assisted Bench Press,"['Chest', 'Front Deltoid']",['Triceps']
+Bar Dip,"['Chest', 'Front Deltoid']",['Triceps']
+Bench Press,"['Chest', 'Front Deltoid']",['Triceps']
+Bench Press Against Band ,"['Chest', 'Front Deltoid']",['Triceps']
+Board Press,"['Chest', 'Front Deltoid']",['Triceps']
+Cable Chest Press,['Chest'],"['Front Deltoid', 'Triceps']"
+Close-Grip Bench Press,['Triceps'],"['Chest', 'Front Deltoid']"
+Close-Grip Feet-Up Bench Press,['Triceps'],"['Chest', 'Front Deltoid']"
+Decline Bench Press,['Chest'],"['Triceps', 'Front Deltoid ']"
+Decline Push-Up,"['Chest', 'Front Deltoid']","['Triceps', 'Abs']"
+Dumbbell Chest Fly,['Chest'],['Front Deltoid']
+Dumbbell Chest Press,"['Chest', 'Front Deltoid']",['Triceps']
+Dumbbell Decline Chest Press,"['Chest', 'Front Deltoid']",['Triceps']
+Dumbbell Floor Press,"['Chest', 'Front Deltoid']",['Triceps']
+Dumbbell Pullover,['Chest'],['Lats']
+Feet-Up Bench Press,"['Chest', 'Front Deltoid']",['Triceps']
+Floor Press,"['Chest', 'Front Deltoid']",['Triceps']
+Incline Bench Press,"['Chest', 'Front Deltoid']",['Triceps']
+Incline Dumbbell Press,"['Chest', 'Front Deltoid']",['Triceps']
+Incline Push-Up,"['Chest', 'Front Deltoid']","['Triceps', 'Abs']"
+Kettlebell Floor Press,"['Chest', 'Front Deltoid']",['Triceps']
+Kneeling Incline Push-Up,"['Chest', 'Front Deltoid']","['Triceps', 'Abs']"
+Kneeling Push-Up,"['Chest', 'Front Deltoid']","['Triceps', 'Abs']"
+Machine Chest Fly,['Chest'],['Front Deltoid']
+Machine Chest Press,"['Chest', 'Front Deltoid']",['Triceps']
+Pec Deck,['Chest'],['Front Deltoid']
+Pin Bench Press,"['Chest', 'Front Deltoid']",['Triceps']
+Push-Up,"['Chest', 'Front Deltoid']","['Triceps', 'Abs']"
+Push-Up Against Wall,"['Chest', 'Front Deltoid']","['Triceps', 'Abs']"
+Push-Ups With Feet in Rings,"['Chest', 'Front Deltoid']","['Triceps', 'Abs']"
+Resistance Band Chest Fly,['Chest'],['Front Deltoid']
+Smith Machine Bench Press,"['Chest', 'Front Deltoid']",['Triceps']
+Smith Machine Incline Bench Press,"['Chest', 'Front Deltoid']",['Triceps']
+Standing Cable Chest Fly,['Chest'],['Front Deltoid']
+Standing Resistance Band Chest Fly,['Chest'],['Front Deltoid']
+name,primary_groups,secondary_groups
+Band External Shoulder Rotation,['Rotator Cuff (posterior)'],[]
+Band Internal Shoulder Rotation,['Rotator Cuff (anterior)'],[]
+Band Pull-Apart,"['Rear Deltoid', 'Rotator Cuff']",['Trapezius']
+Barbell Front Raise,['Front Deltoid'],['Lateral Deltoid']
+Barbell Rear Delt Row,"['Rear Deltoid', 'Trapezius']","['Rotator Cuff', 'Biceps', 'Forearm Flexors']"
+Barbell Upright Row,['Lateral Deltoid'],"['Front Deltoid', 'Trapezius', 'Biceps']"
+Behind the Neck Press,"['Front Deltoid', 'Lateral Deltoid']","['Trapezius', 'Triceps']"
+Cable Lateral Raise,['Lateral Deltoid'],['Front Deltoid']
+Cable Rear Delt Row,"['Rear Deltoid', 'Rotator Cuff']","['Trapezius', 'Biceps']"
+Dumbbell Front Raise,['Front Deltoid'],['Lateral Deltoid']
+Dumbbell Horizontal Internal Shoulder Rotation,['Rotator Cuff (anterior)'],[]
+Dumbbell Horizontal External Shoulder Rotation,['Rotator Cuff (posterior)'],[]
+Dumbbell Lateral Raise,['Lateral Deltoid'],['Front Deltoid']
+Dumbbell Rear Delt Row,"['Rear Deltoid', 'Trapezius']","['Rotator Cuff', 'Biceps', 'Forearm Flexors']"
+Dumbbell Shoulder Press,['Front Deltoid'],"['Triceps', 'Lateral Deltoid']"
+Face Pull,"['Rear Deltoid', 'Rotator Cuff']","['Trapezius', 'Lateral Deltoid']"
+Front Hold,['Front Deltoid'],['Lateral Deltoid']
+Lying Dumbbell External Shoulder Rotation,['Rotator Cuff (posterior)'],[]
+Lying Dumbbell Internal Shoulder Rotation,['Rotator Cuff (anterior)'],[]
+Machine Lateral Raise,['Lateral Deltoid'],['Front Deltoid']
+Machine Shoulder Press,['Front Deltoid'],"['Triceps', 'Lateral Deltoid']"
+Monkey Row,['Lateral Deltoid'],"['Rear Deltoid', 'Trapezius', 'Biceps']"
+Overhead Press,['Front Deltoid'],"['Triceps', 'Lateral Deltoid']"
+Plate Front Raise,['Front Deltoid'],['Lateral Deltoid']
+Power Jerk,['Front Deltoid'],"['Quads', 'Glutes', 'Adductors', 'Lower Back', 'Trapezius', 'Triceps', 'Lateral Deltoid']"
+Push Press,['Front Deltoid'],"['Quads', 'Glutes', 'Adductors', 'Lower Back', 'Trapezius', 'Triceps', 'Lateral Deltoid']"
+Reverse Cable Flyes,"['Rear Deltoid', 'Rotator Cuff']",['Trapezius']
+Reverse Dumbbell Flyes,"['Rear Deltoid', 'Rotator Cuff']",['Trapezius']
+Reverse Machine Fly,"['Rear Deltoid', 'Rotator Cuff']",['Trapezius']
+Seated Dumbbell Shoulder Press,['Front Deltoid'],"['Triceps', 'Lateral Deltoid']"
+Seated Barbell Overhead Press,['Front Deltoid'],"['Triceps', 'Lateral Deltoid']"
+Seated Smith Machine Shoulder Press,['Front Deltoid'],"['Triceps', 'Lateral Deltoid']"
+Snatch Grip Behind the Neck Press,"['Front Deltoid', 'Lateral Deltoid']","['Trapezius', 'Triceps']"
+Squat Jerk,"['Glutes', 'Lower Back', 'Adductors', 'Quads', 'Front Deltoid']","['Trapezius', 'Triceps', 'Lateral Deltoid', 'Calves']"
+Split Jerk,['Front Deltoid'],"['Quads', 'Glutes', 'Adductors', 'Lower Back', 'Trapezius', 'Triceps', 'Lateral Deltoid']"
+Barbell Curl,['Biceps'],['Forearm Flexors']
+Barbell Preacher Curl,['Biceps'],['Forearm Flexors']
+Bodyweight Curl,"['Biceps', 'Lats']",['Forearm Flexors']
+Cable Curl With Bar,['Biceps'],['Forearm Flexors']
+Cable Curl With Rope,['Biceps'],['Forearm Flexors']
+Concentration Curl,['Biceps'],['Forearm Flexors']
+Dumbbell Curl,['Biceps'],['Forearm Flexors']
+Dumbbell Preacher Curl,['Biceps'],['Forearm Flexors']
+Hammer Curl,['Biceps'],['Forearm Flexors']
+Incline Dumbbell Curl,['Biceps'],['Forearm Flexors']
+Machine Bicep Curl,['Biceps'],['Forearm Flexors']
+Spider Curl,['Biceps'],['Forearm Flexors']
+Barbell Standing Triceps Extension,['Triceps'],[]
+Barbell Lying Triceps Extension,['Triceps'],[]
+Bench Dip,['Triceps'],"['Chest', 'Front Deltoid']"
+Close-Grip Push-Up,['Triceps'],"['Abs', 'Chest', 'Front Deltoid']"
+Dumbbell Lying Triceps Extension,[],[]
+Dumbbell Standing Triceps Extension,['Triceps'],[]
+Overhead Cable Triceps Extension,['Triceps'],[]
+Tricep Bodyweight Extension,['Triceps'],[]
+Tricep Pushdown With Bar,['Triceps'],"['bench presses', 'shoulder presses', 'push-ups']"
+Tricep Pushdown With Rope,['Triceps'],"['bench presses', 'shoulder presses', 'push-ups']"
+Air Squat,"['Quads', 'Glutes', 'Adductors']",['Calves']
+Barbell Hack Squat,['Quads'],"['Glutes', 'Adductors', 'Lower Back', 'Trapezius', 'Forearm Flexors', 'Calves']"
+Barbell Lunge,"['Quads', 'Glutes', 'Adductors']",[]
+Barbell Walking Lunge,"['Quads', 'Glutes', 'Adductors']",[]
+Belt Squat,"['Quads', 'Glutes', 'Adductors']",['Calves']
+Body Weight Lunge,"['Quads', 'Glutes', 'Adductors']",[]
+Bodyweight Leg Curl,['Hamstrings'],['Glutes']
+Box Jump,"['Quads', 'Glutes', 'Adductors']",['Calves']
+Box Squat,"['Quads', 'Glutes', 'Adductors', 'Lower Back']",['Calves']
+Bulgarian Split Squat,"['Quads', 'Glutes', 'Adductors']","['muscle growth', 'fix muscle imbalances', 'squat training', 'leg muscles']"
+Chair Squat,"['Quads', 'Glutes', 'Adductors']",['Calves']
+Dumbbell Lunge,"['Quads', 'Glutes', 'Adductors']",['Forearm Flexors']
+Dumbbell Squat,"['Quads', 'Glutes', 'Adductors', 'Lower Back']",['Calves']
+Front Squat,"['Quads', 'Glutes', 'Adductors', 'Lower Back']",['Calves']
+Goblet Squat,"['Quads', 'Glutes', 'Adductors']","['Lower Back', 'Calves']"
+Hack Squat Machine,"['Quads', 'Glutes', 'Adductors']",['muscle growth']
+Half Air Squat,"['Quads', 'Glutes', 'Adductors']",['Calves']
+Hip Adduction Machine,['Adductors'],[]
+Jumping Lunge,"['Quads', 'Glutes', 'Adductors']",[]
+Landmine Hack Squat,"['Quads', 'Glutes', 'Adductors']",[]
+Landmine Squat,"['Quads', 'Glutes', 'Adductors']","['', 'Lower Back', 'Calves']"
+Leg Curl On Ball,['Hamstrings'],['Glutes']
+Leg Extension,['Quads'],[]
+Leg Press,"['Quads', 'Glutes', 'Adductors']",['Hamstrings']
+Lying Leg Curl,['Hamstrings'],[]
+Nordic Hamstring Eccentric,['Hamstrings'],[]
+Pause Squat,"['Quads', 'Glutes', 'Adductors', 'Lower Back']",['Calves']
+Reverse Barbell Lunge,"['Adductors', 'Quads', 'Glutes']",[]
+Romanian Deadlift,"['Glutes', 'Lower Back', 'Hamstrings']","['Adductors', 'Trapezius', 'Forearm Flexors']"
+Safety Bar Squat,"['Quads', 'Glutes', 'Adductors', 'Lower Back']",['Calves']
+Seated Leg Curl,['Hamstrings'],[]
+Shallow Body Weight Lunge,"['Quads', 'Glutes', 'Adductors']",['Hamstrings']
+Side Lunges (Bodyweight),"['Quads', 'Glutes']",['Adductors']
+Smith Machine Squat,"['Quads', 'Glutes', 'Adductors', 'Lower Back']",['Calves']
+Squat,"['', 'Quads', '', 'Adductors', '', 'Glutes', '', 'Lower Back']","['', 'Calves']"
+Step Up,"['Quads', 'Glutes', 'Adductors']",['Hamstrings']
+Zercher Squat,"['Quads', 'Glutes', 'Adductors', 'Lower Back']",['Calves']
+Zombie Squat,"['Quads', 'Glutes', 'Adductors', 'Lower Back']",['Calves']
+Assisted Chin-Up,['Lats'],"['Biceps', 'Rear Deltoids', 'Forearm Flexors', 'Rotator Cuffs']"
+Assisted Pull-Up,['Lats'],"['Biceps', 'Rear Deltoids', 'Forearm Flexors', 'Rotator Cuffs']"
+Back Extension,"['Glutes', 'Lower Back']",['Hamstrings']
+Banded Muscle-Up,"['Chest', 'Lats', 'Triceps']","['Biceps', 'Forearm Flexors', 'Front Deltoid', 'Rear Deltoids', 'Rotator Cuffs']"
+Barbell Row,"['Lats', 'Trapezius', 'Rear Deltoids']","['Biceps', 'Lower Back', 'Forearm Flexors', 'Rotator Cuff']"
+Barbell Shrug,['Trapezius'],['Forearm Flexors']
+Block Clean,"['Glutes', 'Lower Back', 'Adductors', 'Quads']","['Hamstrings', 'Trapezius', 'Forearm Flexors', 'Calves']"
+Block Snatch,"['Glutes', 'Lower Back', 'Adductors', 'Quads']","['Hamstrings', 'Trapezius', 'Calves', 'Forearm Flexors']"
+Cable Close Grip Seated Row,"['Lats', 'Trapezius', 'Rear Deltoids']","['Biceps', 'Forearm Flexors', 'Rotator Cuffs']"
+Cable Wide Grip Seated Row,"['Lats', 'Trapezius', 'Rear Deltoids']","['Biceps', 'Forearm Flexors', 'Rotator Cuffs']"
+Chin-Up,['Lats'],"['Biceps', 'Rear Deltoids', 'Forearm Flexors', 'Rotator Cuffs']"
+Clean,"['Glutes', 'Lower Back', 'Adductors', 'Quads']","['Hamstrings', 'Trapezius', 'Forearm Flexors', 'Calves']"
+Clean and Jerk,"['Glutes', 'Lower Back', 'Adductors', 'Quads', 'Front Deltoid']","['Hamstrings', 'Trapezius', 'Forearm Flexors', 'Triceps', 'Lateral Deltoid', 'Calves']"
+Deadlift,"['Glutes', 'Lower Back']","['Quads', 'Hamstrings', 'Adductors', 'Trapezius', 'Forearm Flexors']"
+Deficit Deadlift,"['Glutes', 'Lower Back']","['Quads', 'Hamstrings', 'Adductors', 'Trapezius', 'Forearm Flexors']"
+Dumbbell Deadlift,"['Glutes', 'Lower Back']","['Quads', 'Hamstrings', 'Adductors', 'Trapezius', 'Forearm Flexors']"
+Dumbbell Row,"['Lats', 'Trapezius', 'Rear Deltoids']","['Biceps', 'Forearm Flexors', 'Rotator Cuff']"
+Dumbbell Shrug,['Trapezius'],['Forearm Flexors']
+Floor Back Extension,['Lower Back'],[]
+Good Morning,"['Glutes', 'Lower Back', 'Hamstrings']",['Adductors']
+Hang Clean,"['Glutes', 'Lower Back', 'Adductors', 'Quads']","['Hamstrings', 'Trapezius', 'Forearm Flexors', 'Calves']"
+Hang Power Clean,"['Glutes', 'Lower Back']","['Adductors', 'Hamstrings', 'Trapezius', 'Forearm Flexors']"
+Hang Power Snatch,"['Glutes', 'Lower Back']","['Adductors', 'Hamstrings', 'Trapezius', 'Forearm Flexors']"
+Hang Snatch,"['Glutes', 'Lower Back', 'Adductors', 'Quads']","['Hamstrings', 'Trapezius', 'Forearm Flexors', 'Calves']"
+Inverted Row,"['Lats', 'Trapezius', 'Rear Deltoids']","['Biceps', 'Forearm Flexors', 'Rotator Cuff']"
+Inverted Row with Underhand Grip,"['Lats', 'Trapezius', 'Rear Deltoids']","['Biceps', 'Forearm Flexors', 'Rotator Cuff']"
+Jefferson Curl,['Lower Back'],"['Adductors', 'Glutes', 'Hamstrings', 'Trapezius']"
+Jumping Muscle-Up,"['Chest', 'Lats', 'Triceps']","['Biceps', 'Forearm Flexors', 'Front Deltoid', 'Rear Deltoids', 'Rotator Cuffs']"
+Kettlebell Swing,"['Glutes', 'Lower Back']","['Hamstrings', 'Adductors', 'Trapezius', 'Forearm Flexors']"
+Lat Pulldown With Pronated Grip,['Lats'],"['Biceps', 'Rear Deltoids', 'Forearm Flexors', 'Rotator Cuffs']"
+Lat Pulldown With Supinated Grip,['Lats'],"['Biceps', 'Rear Deltoids', 'Forearm Flexors', 'Rotator Cuffs']"
+Muscle-Up (Bar),"['Chest', 'Lats', 'Triceps']","['Biceps', 'Forearm Flexors', 'Front Deltoid', 'Rear Deltoids', 'Rotator Cuffs']"
+Muscle-Up (Rings),"['Chest', 'Lats', 'Triceps']","['Biceps', 'Forearm Flexors', 'Front Deltoid', 'Rear Deltoids', 'Rotator Cuffs']"
+One-Handed Cable Row,"['Lats', 'Trapezius', 'Rear Deltoids']","['Biceps', 'Forearm Flexors', 'Rotator Cuffs']"
+One-Handed Lat Pulldown,['Lats'],"['Biceps', 'Rear Deltoids', 'Forearm Flexors', 'Rotator Cuffs']"
+Pause Deadlift,"['Glutes', 'Lower Back']","['Quads', 'Hamstrings', 'Adductors', 'Trapezius', 'Forearm Flexors']"
+Pendlay Row,"['Lats', 'Trapezius', 'Rear Deltoids']","['Biceps', 'Lower Back', 'Forearm Flexors', 'Rotator Cuff']"
+Power Clean,"['Glutes', 'Lower Back']","['Quads', 'Adductors', 'Hamstrings', 'Trapezius', 'Forearm Flexors']"
+Power Snatch,"['Glutes', 'Lower Back']","['Quads', 'Adductors', 'Hamstrings', 'Trapezius', 'Forearm Flexors']"
+Pull-Up,['Lats'],"['Biceps', 'Rear Deltoids', 'Forearm Flexors', 'Rotator Cuffs']"
+Pull-Up With a Neutral Grip,['Lats'],"['Biceps', 'Rear Deltoids', 'Forearm Flexors', 'Rotator Cuffs']"
+Rack Pull,"['Glutes', 'Lower Back']","['Hamstrings', 'Adductors', 'Trapezius', 'Forearm Flexors']"
+Ring Pull-Up,['Lats'],"['Biceps', 'Rear Deltoids', 'Forearm Flexors', 'Rotator Cuffs']"
+Ring Row,"['Lats', 'Trapezius', 'Rear Deltoids']","['Biceps', 'Forearm Flexors', 'Rotator Cuff']"
+Seal Row,"['Lats', 'Trapezius', 'Rear Deltoids']","['Biceps', 'Forearm Flexors', 'Rotator Cuff']"
+Seated Machine Row,"['Lats', 'Trapezius', 'Rear Deltoids']","['Biceps', 'Forearm Flexors', 'Rotator Cuff']"
+Snatch,"['Glutes', 'Lower Back', 'Adductors', 'Quads']","['Hamstrings', 'Trapezius', 'Forearm Flexors', 'Calves']"
+Snatch Grip Deadlift,"['Glutes', 'Lower Back']","['Quads', 'Hamstrings', 'Adductors', 'Trapezius', 'Forearm Flexors']"
+Stiff-Legged Deadlift,"['Glutes', 'Lower Back', 'Hamstrings']","['Adductors', 'Trapezius', 'Forearm Flexors']"
+Straight Arm Lat Pulldown,['Lats'],"['Rear Deltoids', 'Rotator Cuffs']"
+Sumo Deadlift,"['Glutes', 'Lower Back']","['Quads', 'Hamstrings', 'Adductors', 'Trapezius', 'Forearm Flexors']"
+T-Bar Row,"['Lats', 'Trapezius', 'Rear Deltoids']","['Biceps', 'Lower Back', 'Forearm Flexors', 'Rotator Cuff']"
+Trap Bar Deadlift With High Handles,"['Glutes', 'Lower Back', 'Quads']","['Adductors', 'Trapezius', 'Forearm Flexors']"
+Trap Bar Deadlift With Low Handles,"['Glutes', 'Lower Back', 'Quads']","['Adductors', 'Trapezius', 'Forearm Flexors']"
+Banded Side Kicks,['Abductors'],['Glutes']
+Cable Pull Through,['Glutes'],"['Lower Back', 'Hamstrings', 'Adductors']"
+Clamshells,['Abductors'],['Glutes']
+Dumbbell Romanian Deadlift,"['Glutes', 'Lower Back', 'Hamstrings']","['Adductors', 'Trapezius', 'Forearm Flexors']"
+Dumbbell Frog Pumps,['Glutes'],"['Hamstrings', 'Adductors']"
+Fire Hydrants,['Glutes'],[]
+Frog Pumps,['Glutes'],"['Hamstrings', 'Adductors']"
+Glute Bridge,['Glutes'],['Quads']
+Hip Abduction Against Band,['Abductors'],['Glutes']
+Hip Abduction Machine,['Abductors'],['Glutes']
+Hip Thrust,['Glutes'],"['Adductors', 'Quads']"
+Hip Thrust Machine,['Glutes'],"['Adductors', 'Quads']"
+Hip Thrust With Band Around Knees,['Glutes'],"['Adductors', 'Abductors', 'Quads']"
+Lateral Walk With Band,['Abductors'],['Glutes']
+Machine Glute Kickbacks,['Glutes'],"['Hamstrings', 'Adductors']"
+One-Legged Glute Bridge,['Glutes'],"['Adductors', 'Abductors', 'Quads']"
+One-Legged Hip Thrust ,['Glutes'],"['Adductors', 'Abductors', 'Quads']"
+Reverse Hyperextension,"['Glutes', 'Hamstrings', 'Lower back']",[]
+Romanian Deadlift,"['Glutes', 'Lower Back', 'Hamstrings']","['Adductors', 'Trapezius', 'Forearm Flexors']"
+Single Leg Romanian Deadlift,"['Glutes', 'Lower Back', 'Hamstrings']","['Adductors', 'Trapezius', 'Forearm Flexors']"
+Standing Glute Kickback in Machine,['Glutes'],"['Hamstrings', 'Adductors']"
+Step Up,"['Quads', 'Glutes', 'Adductors']",['Hamstrings']
+Ball Slams,"['Lats', 'Abs', 'Obliques']","['Glutes', 'Front Deltoids']"
+Cable Crunch,['Abs'],['Obliques']
+Crunch,['Abs'],['Obliques']
+Dead Bug,['Abs'],['Obliques']
+Hanging Knee Raise,['Abs'],['Obliques']
+Hanging Leg Raise,['Abs'],['Obliques']
+Hanging Sit-Up,['Abs'],['Obliques']
+High to Low Wood Chop with Band,['Obliques'],['Abs']
+Horizontal Wood Chop with Band,['Obliques'],[]
+Kneeling Ab Wheel Roll-Out,['Abs'],['Obliques']
+Kneeling Plank,['Abs'],['Obliques']
+Kneeling Side Plank,['Obliques'],['Abs']
+Lying Leg Raise,['Abs'],['Obliques']
+Lying Windshield Wiper,['Obliques'],['Abs']
+Lying Windshield Wiper with Bent Knees,['Obliques'],['Abs']
+Machine Crunch,['Abs'],['Obliques']
+Mountain Climbers,['Abs'],['Obliques']
+Oblique Crunch,['Obliques'],['Abs']
+Oblique Sit-Up,['Obliques'],['Abs']
+Plank,['Abs'],['Obliques']
+Plank with Leg Lifts,['Abs'],['Obliques']
+Side Plank,['Obliques'],['Abs']
+Sit-Up,['Abs'],['Obliques']
+Barbell Standing Calf Raise,['Calves'],[]
+Eccentric Heel Drop,['Calves'],[]
+Heel Raise,['Calves'],[]
+Seated Calf Raise,['Calves'],[]
+Standing Calf Raise,['Calves'],[]
+Barbell Wrist Curl,['Forearm Flexors'],[]
+Barbell Wrist Curl Behind the Back,['Forearm Flexors'],[]
+Bar Hang,['Forearm Flexors'],[]
+Dumbbell Wrist Curl,['Forearm Flexors'],[]
+Farmers Walk,"['Forearm Flexors', 'Obliques', 'Glutes', 'Trapezius']","['Quads', 'Abs', 'Lower Back', 'Calves', 'Lateral Deltoids']"
+Fat Bar Deadlift,"['Glutes', 'Forearm Flexors', 'Lower Back']","['Quads', 'Hamstrings', 'Adductors', 'Trapezius']"
+Gripper,['Forearm Flexors'],[]
+One-Handed Bar Hang,['Forearm Flexors'],[]
+Plate Pinch,['Forearm Flexors'],[]
+Plate Wrist Curl,['Forearm Flexors'],[]
+Towel Pull-Up,"['Forearm Flexors', 'Lats']","['Biceps', 'Rear Deltoids', 'Rotator Cuffs']"
+Barbell Wrist Extension,[],[]
+Dumbbell Wrist Extension,[],[]
+Rowing Machine,"['Quads', 'Glutes', 'Adductors', 'Hamstrings', 'Calves', 'Lats', 'Trapezius', 'Abs', 'Lower Back', 'Shoulders', 'Biceps']",[]
+Stationary Bike,"['Quads', 'Glutes', 'Adductors', 'Hamstrings', 'Calves']","['1', '2', '3']"
+Bench Press,"['Chest', 'Front Deltoid']",['Triceps']
+Incline Dumbbell Press,"['Chest', 'Front Deltoid']",['Triceps']
+Bar Dips,"['Chest', 'Front Deltoid']",['Triceps']
+Standing Cable Chest Fly,['Chest'],['Front Deltoid']
+Overhead Press,['Front Deltoid'],"['Triceps', 'Lateral Deltoid']"
+Seated Dumbbell Shoulder Press,['Front Deltoid'],"['Triceps', 'Lateral Deltoid']"
+Dumbbell Lateral Raise,['Lateral Deltoid'],['Front Deltoid']
+Reverse Dumbbell Fly,"['Rear Deltoid', 'Rotator Cuff']",['Trapezius']
+Deadlift,"['Glutes', 'Lower Back']","['Quads', 'Hamstrings', 'Adductors', 'Trapezius', 'Forearm Flexors']"
+Lat Pulldown,['Lats'],"['Biceps', 'Rear Deltoids', 'Forearm Flexors', 'Rotator Cuffs']"
+Pull-Up,['Lats'],"['Biceps', 'Rear Deltoids', 'Forearm Flexors', 'Rotator Cuffs']"
+Barbell Row,"['Lats', 'Trapezius', 'Rear Deltoids']","['Biceps', 'Lower Back', 'Forearm Flexors', 'Rotator Cuff']"
+Dumbbell Row,"['Lats', 'Trapezius', 'Rear Deltoids']","['Biceps', 'Forearm Flexors', 'Rotator Cuff']"
+Barbell Curl,['Biceps'],['Forearm Flexors']
+Dumbbell Curl,['Biceps'],['Forearm Flexors']
+Hammer Curl,['Biceps'],['Forearm Flexors']
+Barbell Lying Triceps Extension,['Triceps'],[]
+Overhead Cable Triceps Extension,['Triceps'],[]
+Tricep Pushdown,['Triceps'],"['bench presses', 'shoulder presses', 'push-ups']"
+Close-Grip Bench Press,['Triceps'],"['Chest', 'Front Deltoid']"
+Squat,"['', 'Quads', '', 'Adductors', '', 'Glutes', '', 'Lower Back']","['', 'Calves']"
+Hack Squats,"['Quads', 'Glutes', 'Adductors']",['muscle growth']
+Leg Extension,['Quads'],[]
+Bulgarian Split Squat,"['Quads', 'Glutes', 'Adductors']","['muscle growth', 'fix muscle imbalances', 'squat training', 'leg muscles']"
+Seated Leg Curl,['Hamstrings'],[]
+Lying Leg Curl,['Hamstrings'],[]
+Romanian Deadlift,"['Glutes', 'Lower Back', 'Hamstrings']","['Adductors', 'Trapezius', 'Forearm Flexors']"
+Squat,"['', 'Quads', '', 'Adductors', '', 'Glutes', '', 'Lower Back']","['', 'Calves']"
+Hip Thrust,['Glutes'],"['Adductors', 'Quads']"
+Romanian Deadlift,"['Glutes', 'Lower Back', 'Hamstrings']","['Adductors', 'Trapezius', 'Forearm Flexors']"
+Bulgarian Split Squat,"['Quads', 'Glutes', 'Adductors']","['muscle growth', 'fix muscle imbalances', 'squat training', 'leg muscles']"
+Cable Crunch,['Abs'],['Obliques']
+Hanging Leg Raise,['Abs'],['Obliques']
+High to Low Wood Chop,['Obliques'],['Abs']
+Crunch,['Abs'],['Obliques']
+Standing Calf Raise,['Calves'],[]
+Seated Calf Raise,['Calves'],[]
