@@ -1,9 +1,10 @@
 import csv
 
-from gym_tracker.domain.model import ExerciseMetadata
+from gym_tracker.domain.model import ExerciseMetadata, ALL_MUSCLES
+from gym_tracker.entrypoints.dependencies import get_workouts_repo, postgres_client
 
 
-def load_exercises_to_db(path_to_data: str):
+def load_exercises_from_csv(path_to_data: str):
     all_exercises = []
     with open(path_to_data, "r", encoding="utf-8", newline="") as fp:
         reader = csv.reader(fp)
@@ -26,21 +27,16 @@ def load_exercises_to_db(path_to_data: str):
                 primary_muscle_group=primary[0],
                 secondary_muscle_groups=secondary,
             )
-            all_exercises.append(exercise_meta)
+            if exercise_meta not in all_exercises:
+                all_exercises.append(exercise_meta)
     return all_exercises
 
 
 def parse_muscle_groups(muscle_groups: str) -> list[str]:
     filtered = filter(
-        lambda x: x != "''" and x != '"' and x != "",
+        lambda x: x in ALL_MUSCLES,
         (
-            muscle.replace("'", "")
-            .replace("[", "")
-            .replace("]", "")
-            .replace('"', "")
-            .strip("'")
-            .strip('"')
-            .strip(" ")
+            muscle.replace("'", "").strip("[").strip("]").strip()
             for muscle in muscle_groups.split(",")
         ),
     )
@@ -48,10 +44,10 @@ def parse_muscle_groups(muscle_groups: str) -> list[str]:
 
 
 if __name__ == "__main__":
-    exercises = load_exercises_to_db("temp_db.csv")
-    all_muscle_groups = set()
-    for exercise in exercises:
-        all_muscle_groups.add(exercise.primary_muscle_group)
-        for muscle in exercise.secondary_muscle_groups:
-            all_muscle_groups.add(muscle)
+    exercises = load_exercises_from_csv("temp_db.csv")
+    print(postgres_client.info.status)
+
+    repo = get_workouts_repo()
+    res2 = repo.add_many_exercises_metadata(exercises)
+    print(res2)
     assert True

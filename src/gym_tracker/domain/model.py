@@ -7,8 +7,7 @@ import pendulum
 from pendulum import DateTime
 
 
-all_muscles = {
-    "Adductors",
+ALL_MUSCLES = {
     "Abductors",
     "Rotator Cuff (posterior)",
     "Quads",
@@ -17,32 +16,22 @@ all_muscles = {
     "Front Deltoids",
     "Lower back",
     "Glutes",
-    "shoulder presses",
     "Trapezius",
-    "2",
     "Biceps",
-    "1",
     "Rotator Cuffs",
     "Obliques",
-    "push-ups",
     "Triceps",
     "Rotator Cuff (anterior)",
-    "muscle growth",
     "Abs",
     "Lateral Deltoid",
     "Rear Deltoids",
     "Hamstrings",
-    "3",
-    "squat training",
     "Lateral Deltoids",
     "Front Deltoid",
     "Shoulders",
     "Lower Back",
     "Chest",
     "Forearm Flexors",
-    "fix muscle imbalances",
-    "leg muscles",
-    "bench presses",
     "Rear Deltoid",
     "Lats",
 }
@@ -72,6 +61,11 @@ class ExerciseMetadata:
             f"Name={self.name} primary_muscle={self.primary_muscle_group} "
             f"secondary_muscles={self.secondary_muscle_groups}"
         )
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, ExerciseMetadata):
+            return False
+        return self.name == other.name
 
 
 @dataclass
