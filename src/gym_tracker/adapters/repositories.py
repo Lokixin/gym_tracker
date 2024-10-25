@@ -4,6 +4,7 @@ from collections import namedtuple
 import psycopg
 from psycopg import Connection
 
+from gym_tracker.adapters.admin_queries import insert_muscle_group
 from gym_tracker.adapters.workouts_queries import (
     select_metadata_by_name,
     insert_exercise_metadata,
@@ -60,6 +61,21 @@ class PostgresSQLRepo:
             result = cursor.fetchone()
             return result
 
+    def add_many_exercises_metadata(
+        self, exercises_metadata: list[ExerciseMetadata]
+    ) -> int:
+        with self.conn.cursor() as cursor:
+            values = [
+                (
+                    exercise_metadata.name,
+                    exercise_metadata.primary_muscle_group,
+                    exercise_metadata.secondary_muscle_groups,
+                )
+                for exercise_metadata in exercises_metadata
+            ]
+            cursor.executemany(insert_exercise_metadata, values)
+            return cursor.rowcount
+
     def add_workout(self, workout: Workout) -> int:
         with self.conn.cursor() as cursor:
             cursor.execute(insert_workout, (workout.date, workout.duration))
@@ -100,6 +116,13 @@ class PostgresSQLRepo:
             exercise_sets=exercise.exercise_sets, exercise_id=exercise_id
         )
         return exercise_id
+
+    def add_muscle_groups(self, muscle_groups: set[str]) -> int:
+        with self.conn.cursor() as cursor:
+            cursor.executemany(
+                insert_muscle_group, [(muscle,) for muscle in muscle_groups]
+            )
+            return 0
 
     def get_workout_by_date(
         self, date: str
