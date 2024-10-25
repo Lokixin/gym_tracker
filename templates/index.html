@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Soy un título!</title>
+</head>
+<body>
+<h1>
+    Workouts Clients
+</h1>
+<h2>
+    Your most recent Workout
+</h2>
+<label for="cars">Choose a workout:</label>
+<select name="workouts_dates" id="workouts_dates">
+    {% for date in workouts_dates %}
+        <option value={{ date }}>{{ date }}</option>
+    {% endfor %}
+</select>
+
+<script>
+    console.log("Hola")
+    const get_workout_path = "/workouts/by_date"
+    const date_selector = document.getElementById("workouts_dates")
+    async function get_workout_by_date(event) {
+        console.log("Select changed!")
+        const request_path = `${get_workout_path}/${event.target.value}`
+        const res = await fetch(request_path, {method: "GET", })
+        const res_body = await res.json()
+        console.log(request_path)
+        console.log(res_body)
+    }
+    date_selector.addEventListener(
+        "change",
+        (event) => get_workout_by_date(event)
+    )
+</script>
+
+</body>
+</html>

@@ -161,10 +161,17 @@ class PostgresSQLRepo:
             results = [exercise[0] for exercise in cursor.fetchall()]
             return results
 
+    def get_existing_workouts_dates(self) -> list[str]:
+        query: LiteralString = """SELECT date FROM workouts ORDER BY date DESC;"""
+        with self.conn.cursor() as cursor:
+            cursor.execute(query)
+            dates = [str(_date[0]) for _date in cursor.fetchall()]
+            return dates
+
 
 if __name__ == "__main__":
     connection_string = "dbname=workouts host=localhost user=admin password=admin"
     with psycopg.connect(connection_string, autocommit=True) as conn:
         repo = PostgresSQLRepo(connection=conn)
-        res = repo.get_workout_by_id(1)
+        res = repo.get_existing_workouts_dates()
         print(res)
