@@ -17,7 +17,7 @@ services:
     depends_on:
       - postgres
     volumes:
-      - .:/gym_tracker
+      - .:/app
   adminer:
     image: adminer
     restart: always

@@ -2,7 +2,11 @@ FROM python:3.11.10-alpine3.20
 
 RUN pip install poetry
 
-COPY . .
+WORKDIR /app
+
+COPY pyproject.toml poetry.lock ./
+
+COPY . /app
 
 RUN poetry install
 
