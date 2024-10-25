@@ -1,5 +1,6 @@
 import logging
 from collections import namedtuple
+from typing import LiteralString
 
 import psycopg
 from psycopg import Connection
@@ -150,6 +151,15 @@ class PostgresSQLRepo:
             exercises = [ExerciseRow(*_row) for _row in cursor.fetchall()]
             cursor.execute(select_date_and_duration_by_id, (workout_id,))
             return exercises, workout_info
+
+    def get_exercises_name(self, search_term: str) -> list[str]:
+        search_query: LiteralString = (
+            """SELECT name FROM exercises_metadata WHERE name ILIKE %s LIMIT 10;"""
+        )
+        with self.conn.cursor() as cursor:
+            cursor.execute(search_query, (f"%{search_term}%",))
+            results = [exercise[0] for exercise in cursor.fetchall()]
+            return results
 
 
 if __name__ == "__main__":
