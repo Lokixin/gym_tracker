@@ -13,6 +13,7 @@
 </h2>
 <label for="workouts_dates">Choose a workout:</label>
 <select name="workouts_dates" id="workouts_dates">
+    <option disabled selected value> -- select an option -- </option>
     {% for date in workouts_dates %}
     <option value={{date}}>{{date}}</option>
     {% endfor %}
@@ -43,7 +44,12 @@
         for (const exercise of workout_body.exercises) {
             const entry = document.createElement("li")
             entry.id = "soy_un_id"
-            entry.appendChild(document.createTextNode(exercise.exercise_metadata.name))
+            let exercise_description = `
+            ${exercise.exercise_metadata.name}
+            (Primary Muscle: ${exercise.exercise_metadata.primary_muscle_group}.
+            Secondary Muscles: ${exercise.exercise_metadata.secondary_muscle_groups})
+            `
+            entry.appendChild(document.createTextNode(exercise_description))
             container.appendChild(entry)
 
             const sublist = document.createElement("ol")

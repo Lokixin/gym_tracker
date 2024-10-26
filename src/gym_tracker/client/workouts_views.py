@@ -16,5 +16,5 @@ def home(
 ) -> HTMLResponse:
     workouts_dates = repo.get_existing_workouts_dates()
     return templates.TemplateResponse(
-        request=request, name="index.html", context={"workouts_dates": workouts_dates}
+        request=request, name="read_workouts.html", context={"workouts_dates": workouts_dates}
     )
