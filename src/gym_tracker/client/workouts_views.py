@@ -11,6 +11,10 @@ templates = Jinja2Templates(directory="templates")
 
 
 @client_router.get("/")
-def home(request: Request, repo: PostgresSQLRepo = Depends(get_workouts_repo)) -> HTMLResponse:
+def home(
+    request: Request, repo: PostgresSQLRepo = Depends(get_workouts_repo)
+) -> HTMLResponse:
     workouts_dates = repo.get_existing_workouts_dates()
-    return templates.TemplateResponse(request=request, name="index.html", context={"workouts_dates": workouts_dates})
+    return templates.TemplateResponse(
+        request=request, name="index.html", context={"workouts_dates": workouts_dates}
+    )

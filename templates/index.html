@@ -9,27 +9,58 @@
     Workouts Clients
 </h1>
 <h2>
-    Your most recent Workout
+    Your most recent Workouts
 </h2>
-<label for="cars">Choose a workout:</label>
+<label for="workouts_dates">Choose a workout:</label>
 <select name="workouts_dates" id="workouts_dates">
     {% for date in workouts_dates %}
-        <option value={{ date }}>{{ date }}</option>
+    <option value={{date}}>{{date}}</option>
     {% endfor %}
 </select>
+<div id="workout_container">
+    <h3 id="workout_title">
+    </h3>
+    <ol id="workout_exercises">
+    </ol>
+</div>
 
 <script>
-    console.log("Hola")
+    async function get_workout_by_date(event) {
+        const container = document.getElementById("workout_exercises")
+        container.innerHTML = ""
+        const request_path = `${get_workout_path}/${event.target.value}`
+        const res = await fetch(request_path, {method: "GET",})
+        const workout_body = await res.json()
+        console.log(workout_body)
+        format_workout(workout_body)
+    }
+
+    function format_workout(workout_body) {
+        const container = document.getElementById("workout_exercises")
+        const workout_title = document.getElementById("workout_title")
+        workout_title.innerText = `Workout from day ${workout_body.date} with duration ${workout_body.duration} minutes`
+
+        for (const exercise of workout_body.exercises) {
+            const entry = document.createElement("li")
+            entry.id = "soy_un_id"
+            entry.appendChild(document.createTextNode(exercise.exercise_metadata.name))
+            container.appendChild(entry)
+
+            const sublist = document.createElement("ol")
+            for (const exercise_set of exercise.exercise_sets) {
+                const sublist_entry = document.createElement("li")
+                let exercise_info = `${exercise_set.weight} kgs x ${exercise_set.repetitions} reps`
+                exercise_info += exercise_set.to_failure ? " (failure)" : ""
+                sublist_entry.appendChild(document.createTextNode(exercise_info))
+                sublist.appendChild(sublist_entry)
+                entry.appendChild(sublist)
+            }
+        }
+    }
+
     const get_workout_path = "/workouts/by_date"
     const date_selector = document.getElementById("workouts_dates")
-    async function get_workout_by_date(event) {
-        console.log("Select changed!")
-        const request_path = `${get_workout_path}/${event.target.value}`
-        const res = await fetch(request_path, {method: "GET", })
-        const res_body = await res.json()
-        console.log(request_path)
-        console.log(res_body)
-    }
+
     date_selector.addEventListener(
         "change",
         (event) => get_workout_by_date(event)

@@ -50,7 +50,9 @@ def workout_object_to_dto(workout: Workout) -> WorkoutDTO:
             exercise_sets=sets,
         )
         exercises.append(_exercise)
-    return WorkoutDTO(date=workout.date, duration=workout.duration, exercises=exercises)
+    return WorkoutDTO(
+        date=workout.simple_date, duration=workout.duration, exercises=exercises
+    )
 
 
 def workout_from_db_to_dto(
