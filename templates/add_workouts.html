@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add here your new workout!</title>
+</head>
+<body>
+<h1>
+    Here you can add new workouts!
+</h1>
+
+<div>
+    <h2>
+        Aquí pondremos un form con fecha y duracion
+    </h2>
+    <form action="/workouts/by_date" method="POST" id="submit_workout">
+        <label for="workout_date">Workout Date:</label><br>
+        <input type="date" id="workout_date" name="workout_date" value=""><br>
+        <label for="workout_duration">Workout Duration:</label><br>
+        <input type="number" id="workout_duration" name="workout_duration" value="0"><br><br>
+        <input type="submit" value="Create!">
+    </form>
+</div>
+<script>
+    async function postNewWorkout(event) {
+        event.preventDefault()
+        const data = new FormData(event.target)
+        const res = await fetch(
+            "/workouts/by_date",
+            {
+                method: "POST",
+                body: JSON.stringify({date: data.get("workout_date"), duration: data.get("workout_duration")}),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }
+        )
+        const res_body = await res.json()
+        console.log(res_body)
+    }
+
+    const submit = document.getElementById("submit_workout")
+    submit.addEventListener("submit", (event) => postNewWorkout(event))
+
+</script>
+</body>
+</html>

@@ -3,7 +3,7 @@ from starlette import status
 from starlette.responses import JSONResponse
 
 from gym_tracker.adapters.mappers import workout_from_db_to_dto
-from gym_tracker.adapters.repositories import PostgresSQLRepo
+from gym_tracker.adapters.repositories import PostgresSQLRepo, logger
 from gym_tracker.domain.model import Workout
 from gym_tracker.entrypoints.dependencies import get_workouts_repo
 from gym_tracker.entrypoints.dtos import (
@@ -43,7 +43,9 @@ def create_new_workout_service(
     new_workout = Workout(
         duration=workout_body.duration, date=workout_body.date, exercises=[]
     )
-    workout_id = workouts_repo.add_workout(new_workout)
+    # workout_id = workouts_repo.add_workout(new_workout)
+    workout_id = 33
+    logger.info(f"Created new workout with: {workout_body}")
     return JSONResponse(status_code=status.HTTP_201_CREATED, content={"id": workout_id})
 
 
