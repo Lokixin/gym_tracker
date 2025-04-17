@@ -16,13 +16,14 @@ def home(
 ) -> HTMLResponse:
     workouts_dates = repo.get_existing_workouts_dates()
     return templates.TemplateResponse(
-        request=request, name="read_workouts.html", context={"workouts_dates": workouts_dates}
+        request=request,
+        name="read_workouts.html",
+        context={"workouts_dates": workouts_dates},
     )
+
 
 @client_router.get("/new_workout")
 def add_new_workout(
     request: Request,
 ) -> HTMLResponse:
-    return templates.TemplateResponse(
-        request=request, name="add_workouts.html"
-    )
+    return templates.TemplateResponse(request=request, name="add_workouts.html")
