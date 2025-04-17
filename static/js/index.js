@@ -2,9 +2,40 @@
 const addExerciseButton = document.getElementById("add_new_exercise")
 const exerciseInput = document.getElementById("exercise_name")
 const exercisesFormContainer = document.getElementById("container")
+const exercisesDataList = document.getElementById("exercises-list")
 let exerciseCounter = 0;
 
+
 addExerciseButton.addEventListener("click", addExerciseToForm)
+exerciseInput.addEventListener("input", autocompleteExerciseName)
+
+
+async function autocompleteExerciseName(ev) {
+    const currentText = ev.target.value;
+    if (currentText.length < 3) {
+        return;
+    }
+
+    const url = `http://localhost:5555/search/exercises?exercise_name=${currentText}`
+    const res = await fetch(
+        encodeURI(url),
+        {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            }
+        }
+    )
+    const resBody = await res.json()
+    resBody.forEach(exercise => {
+        const exerciseOption = document.createElement("option")
+        const text = document.createTextNode(exercise)
+        exerciseOption.appendChild(text)
+        exercisesDataList.appendChild(exerciseOption)
+    })
+    console.log(resBody)
+}
 
 function addSetToExercise(event, currentExerciseDiv) {
     console.log(currentExerciseDiv)
@@ -53,5 +84,6 @@ function addExerciseToForm(event) {
     newExerciseContainer.appendChild(addSetButton)
     exercisesFormContainer.appendChild(newExerciseContainer)
     exerciseInput.value = ""
+    exercisesDataList.innerHTML = ""
 }
 

@@ -13,7 +13,10 @@
 <div>
     <div id="add_exercise_name">
         <label for="exercise_name">Exercise Name: </label>
-        <input id="exercise_name" required minlength="3">
+        <input id="exercise_name" list="exercises-list" required minlength="3">
+        <datalist id="exercises-list">
+
+        </datalist>
         <button id="add_new_exercise" type="button">
             Add new exercise
         </button>
