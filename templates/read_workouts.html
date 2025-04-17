@@ -126,7 +126,6 @@
         const request_path = `${get_workout_path}/${event.target.value}`
         const res = await fetch(request_path, {method: "GET",})
         const workout_body = await res.json()
-        console.log(workout_body)
         format_workout(workout_body)
     }
 
