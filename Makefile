@@ -1,6 +1,6 @@
 ALL_PACKAGES := src tests
 
-.PHONY : reformat lint unit app kill
+.PHONY : reformat lint unit app kill docker-app down
 
 lint:
 	poetry run ruff check $(ALL_PACKAGES) --fix &
@@ -17,3 +17,9 @@ app:
 
 kill:
 	Stop-Process -Name "python" -force
+
+docker-app:
+	docker-compose up --build
+
+down:
+	docker-compose down
