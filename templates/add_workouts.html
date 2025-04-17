@@ -13,11 +13,39 @@
     <h2>
         Aquí pondremos un form con fecha y duracion
     </h2>
+
+    <template id="add_exercise">
+        <label for="exercise_name">Exercise Name:</label><br>
+        <input type="text" id="exercise_name" name="workout_date" value=""><br>
+        <div id="sets_container">
+
+        </div>
+        <button id="add_new_set" type="button">
+            Add new set
+        </button>
+        <br><br>
+    </template>
+
+    <template id="add_set">
+        <label for="set_weight">Weight (kgs):</label><br>
+        <input type="number" id="set_weight" name="set_weight" value=""><br>
+        <label for="set_repetitions">Repetitions: </label><br>
+        <input type="number" id="set_repetitions" name="set_repetitions" value=""><br>
+        <label for="set_failure">Reached failure?: </label><br>
+        <input type="checkbox" id="set_failure" name="set_failure" value=""><br>
+    </template>
+
     <form action="/workouts/by_date" method="POST" id="submit_workout">
-        <label for="workout_date">Workout Date:</label><br>
-        <input type="date" id="workout_date" name="workout_date" value=""><br>
-        <label for="workout_duration">Workout Duration:</label><br>
-        <input type="number" id="workout_duration" name="workout_duration" value="0"><br><br>
+        <div id="container">
+            <label for="workout_date">Workout Date:</label><br>
+            <input type="date" id="workout_date" name="workout_date" value=""><br>
+            <label for="workout_duration">Workout Duration:</label><br>
+            <input type="number" id="workout_duration" name="workout_duration" value="0"><br><br>
+        </div>
+        <button id="add_new_exercise" type="button">
+            Add new exercise
+        </button>
+        <br><br>
         <input type="submit" value="Create!">
     </form>
 </div>
@@ -39,8 +67,49 @@
         console.log(res_body)
     }
 
+    let current_id = 0
     const submit = document.getElementById("submit_workout")
+    const container = document.getElementById("container")
+
+    const new_exercise_btn = document.getElementById("add_new_exercise")
+
+
+    const new_exercise_template = document.getElementById("add_exercise")
+    const new_set_template = document.getElementById("add_set")
+
+    new_exercise_btn.addEventListener("click", () => {
+        const new_elem = new_exercise_template.content.cloneNode(true)
+        const inputs = new_elem.querySelectorAll("input")
+        const labels = new_elem.querySelectorAll("label")
+        for (let i = 0; i < inputs.length; i++) {
+            inputs[i].id = inputs[i].id + "_" + current_id
+            labels[i].htmlFor = labels[i].htmlFor + "_" + current_id
+        }
+        container.appendChild(new_elem)
+
+        const new_set_button = document.getElementById("add_new_set")
+        new_set_button.addEventListener("click", () => {
+            let local_id = 0
+            local_id += current_id
+            const new_set = new_set_template.content.cloneNode(true)
+            const inputs_ = new_set.querySelectorAll("input")
+            const labels_ = new_set.querySelectorAll("label")
+            console.log(inputs_)
+            console.log(labels_)
+
+            for (let i = 0; i < inputs_.length; i++) {
+                inputs_[i].id = inputs_[i].id + "_" + local_id
+                labels_[i].htmlFor = labels_[i].htmlFor + "_" + local_id
+                local_id += 1
+
+            }
+            container.appendChild(new_set_template.content.cloneNode(true))
+        })
+        current_id = current_id + 1
+
+    })
     submit.addEventListener("submit", (event) => postNewWorkout(event))
+
 
 </script>
 </body>
