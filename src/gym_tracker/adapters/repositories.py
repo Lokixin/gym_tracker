@@ -1,9 +1,11 @@
 import logging
 from collections import namedtuple
+from datetime import datetime, timezone
 from typing import LiteralString
 
 import psycopg
 from psycopg import Connection
+
 
 from gym_tracker.adapters.admin_queries import insert_muscle_group
 from gym_tracker.adapters.workouts_queries import (
@@ -16,10 +18,10 @@ from gym_tracker.adapters.workouts_queries import (
     select_workout_date_and_duration,
     select_workout_by_id,
     select_date_and_duration_by_id,
+    insert_exercise_by_id_to_workout,
 )
 from gym_tracker.domain.model import (
     ExerciseMetadata,
-    Workout,
     Exercise,
     ExerciseSet,
 )
@@ -77,16 +79,55 @@ class PostgresSQLRepo:
             cursor.executemany(insert_exercise_metadata, values)
             return cursor.rowcount
 
-    def add_workout(self, workout: Workout) -> int:
-        with self.conn.cursor() as cursor:
-            cursor.execute(insert_workout, (workout.date, workout.duration))
-            inserted_id = cursor.fetchone()[0]
-            return inserted_id
+    def add_workout(
+        self,
+        exercises: dict[str, list[dict[str, int | float]]],
+        workout_date: str | None = None,
+        workout_duration: int | None = 0,
+    ) -> int:
+        if not workout_date:
+            workout_date = datetime.now(timezone.utc).isoformat()
+        with self.conn.transaction():
+            with self.conn.cursor() as cursor:
+                cursor.execute(insert_workout, (workout_date, workout_duration))
+                inserted_id = cursor.fetchone()[0]
+                exercise_query_params = [
+                    (int(exercise_metadata_id), inserted_id)
+                    for exercise_metadata_id in exercises.keys()
+                ]
+                print("Exercise Query Params: ", exercise_query_params)
+                execute_values(insert_exercise_by_id_to_workout, exercise_query_params)
+                inserted_exercises_id = [_id[0] for _id in cursor.fetchall()]
+                exercise_sets_query_params = []
+                for exercise_id, exercise_sets in zip(
+                    inserted_exercises_id, exercises.values()
+                ):
+                    for _set in exercise_sets:
+                        exercise_sets_query_params.append(
+                            (
+                                _set["weight"],
+                                _set["reps"],
+                                False,
+                                exercise_id,
+                            )
+                        )
+                cursor.executemany(insert_sets_to_exercise, exercise_sets_query_params)
+                return inserted_id
 
     def add_exercise_to_workout(self, exercise: Exercise, workout_id: int) -> int:
         exercise_name = exercise.exercise_metadata.name
         with self.conn.cursor() as cursor:
             cursor.execute(insert_exercise_to_workout, (exercise_name, workout_id))
+            inserted_id = cursor.fetchone()[0]
+            return inserted_id
+
+    def add_exercise_by_id_to_workout(
+        self, exercise_metadata_id: int, workout_id: int
+    ) -> int:
+        with self.conn.cursor() as cursor:
+            cursor.execute(
+                insert_exercise_by_id_to_workout, (exercise_metadata_id, workout_id)
+            )
             inserted_id = cursor.fetchone()[0]
             return inserted_id
 
@@ -152,13 +193,13 @@ class PostgresSQLRepo:
             cursor.execute(select_date_and_duration_by_id, (workout_id,))
             return exercises, workout_info
 
-    def get_exercises_name(self, search_term: str) -> list[str]:
+    def get_exercises_name(self, search_term: str) -> list[dict[int, str]]:
         search_query: LiteralString = (
-            """SELECT name FROM exercises_metadata WHERE name ILIKE %s LIMIT 10;"""
+            """SELECT id, name FROM exercises_metadata WHERE name ILIKE %s LIMIT 10;"""
         )
         with self.conn.cursor() as cursor:
             cursor.execute(search_query, (f"%{search_term}%",))
-            results = [exercise[0] for exercise in cursor.fetchall()]
+            results = [{exercise[0]: exercise[1]} for exercise in cursor.fetchall()]
             return results
 
     def get_existing_workouts_dates(self) -> list[str]:

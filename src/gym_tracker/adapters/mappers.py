@@ -76,3 +76,19 @@ def workout_from_db_to_dto(
         )
     workout_dto = workout_object_to_dto(current_workout)
     return workout_dto
+
+
+def map_workout_for_to_dto(workout_entries: dict[str, int | float]) -> dict:
+    output = {}
+    for key, value in workout_entries.items():
+        exercise_name, attr, series = key.split(".")
+        if attr == "reps":
+            value = int(value)
+        if exercise_name not in output:
+            output[exercise_name] = [{attr: value}]
+        else:
+            if attr not in output[exercise_name][len(output[exercise_name]) - 1]:
+                output[exercise_name][len(output[exercise_name]) - 1][attr] = value
+            else:
+                output[exercise_name].append({attr: value})
+    return output

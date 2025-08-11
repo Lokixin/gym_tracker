@@ -55,6 +55,12 @@ insert_exercise_to_workout: LiteralString = """
     RETURNING id;
 """
 
+insert_exercise_by_id_to_workout: LiteralString = """
+    INSERT INTO full_exercises (metadata_id, workout_id) 
+    VALUES (%s, %s)
+    RETURNING id;
+"""
+
 insert_sets_to_exercise: LiteralString = """
     INSERT INTO exercise_sets (weight, repetitions, to_failure, full_exercise_id) 
     VALUES (
