@@ -13,10 +13,10 @@ class ExerciseSetDTO(BaseModel):
 
 class ExerciseMetadataDTO(BaseModel):
     name: Annotated[str, Field(..., examples=["bench press"])]
-    primary_muscle_group: MuscleGroup
-    secondary_muscle_groups: Annotated[
-        list[MuscleGroup], Field(..., examples=[["back", "biceps"]])
-    ]
+    primary_muscle_group: str
+    secondary_muscle_groups: (
+        Annotated[list[str | None], Field(..., examples=[["back", "biceps"]])] | None
+    ) = [""]
 
 
 class ExerciseDTO(BaseModel):

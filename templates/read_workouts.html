@@ -109,7 +109,7 @@
 <select name="workouts_dates" id="workouts_dates">
     <option disabled selected value> -- select an option -- </option>
     {% for date in workouts_dates %}
-    <option value={{date}}>{{date}}</option>
+    <option value="{{date}}">{{date}}</option>
     {% endfor %}
 </select>
 <div id="workout_container">
@@ -124,6 +124,7 @@
         const container = document.getElementById("workout_exercises")
         container.innerHTML = ""
         const request_path = `${get_workout_path}/${event.target.value}`
+        console.log(request_path)
         const res = await fetch(request_path, {method: "GET",})
         const workout_body = await res.json()
         format_workout(workout_body)

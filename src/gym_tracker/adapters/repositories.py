@@ -5,13 +5,12 @@ from typing import LiteralString
 
 import psycopg
 from psycopg import Connection
-
+from psycopg.sql import SQL
 
 from gym_tracker.adapters.admin_queries import insert_muscle_group
 from gym_tracker.adapters.workouts_queries import (
     select_metadata_by_name,
     insert_exercise_metadata,
-    insert_workout,
     insert_exercise_to_workout,
     insert_sets_to_exercise,
     select_workout_by_date,
@@ -19,6 +18,7 @@ from gym_tracker.adapters.workouts_queries import (
     select_workout_by_id,
     select_date_and_duration_by_id,
     insert_exercise_by_id_to_workout,
+    insert_workout_cte,
 )
 from gym_tracker.domain.model import (
     ExerciseMetadata,
@@ -87,32 +87,49 @@ class PostgresSQLRepo:
     ) -> int:
         if not workout_date:
             workout_date = datetime.now(timezone.utc).isoformat()
+        print("Workout Date:", workout_date)
+        metadata_ids = [int(metadata_id) for metadata_id in exercises.keys()]
+        print("Metadata ids: ", metadata_ids)
         with self.conn.transaction():
             with self.conn.cursor() as cursor:
-                cursor.execute(insert_workout, (workout_date, workout_duration))
-                inserted_id = cursor.fetchone()[0]
-                exercise_query_params = [
-                    (int(exercise_metadata_id), inserted_id)
-                    for exercise_metadata_id in exercises.keys()
-                ]
-                print("Exercise Query Params: ", exercise_query_params)
-                execute_values(insert_exercise_by_id_to_workout, exercise_query_params)
+                query = insert_workout_cte.format(
+                    date=workout_date,
+                    duration=workout_duration,
+                    metadata_ids=[int(metadata_id) for metadata_id in exercises.keys()],
+                )
+
+                cursor.execute(query)
                 inserted_exercises_id = [_id[0] for _id in cursor.fetchall()]
                 exercise_sets_query_params = []
+
                 for exercise_id, exercise_sets in zip(
                     inserted_exercises_id, exercises.values()
                 ):
                     for _set in exercise_sets:
                         exercise_sets_query_params.append(
                             (
-                                _set["weight"],
+                                _set["weights"],
                                 _set["reps"],
                                 False,
                                 exercise_id,
                             )
                         )
-                cursor.executemany(insert_sets_to_exercise, exercise_sets_query_params)
-                return inserted_id
+                prepared_ex_values_sql = SQL(",").join(
+                    SQL("({weight}, {reps}, {to_failure}, {exercise_id})").format(
+                        weight=str(ex[0]),
+                        reps=str(ex[1]),
+                        to_failure=str(ex[2]),
+                        exercise_id=str(ex[3]),
+                    )
+                    for ex in exercise_sets_query_params
+                )
+                print(prepared_ex_values_sql.as_string(self.conn))
+                query = SQL("""
+                    INSERT INTO exercise_sets (weight, repetitions, to_failure, full_exercise_id) 
+                    VALUES {values};
+                """).format(values=prepared_ex_values_sql)
+                cursor.execute(query)
+                return
 
     def add_exercise_to_workout(self, exercise: Exercise, workout_id: int) -> int:
         exercise_name = exercise.exercise_metadata.name
@@ -169,6 +186,7 @@ class PostgresSQLRepo:
     def get_workout_by_date(
         self, date: str
     ) -> tuple[list[ExerciseRow], WorkoutInfoRow] | None:
+        print(date)
         with self.conn.cursor() as cursor:
             cursor.execute(select_workout_date_and_duration, (date,))
             if workout_metadata := cursor.fetchone():
