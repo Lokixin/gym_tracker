@@ -6,9 +6,9 @@ from gym_tracker.adapters.repositories import PostgresSQLRepo
 from gym_tracker.entrypoints.dependencies import get_workouts_repo
 from gym_tracker.entrypoints.dtos import (
     WorkoutDTO,
-    CreateWorkoutBody,
     ExerciseDTO,
     ExerciseSetDTO,
+    CreateWorkoutFromClient,
 )
 from gym_tracker.services.workouts_services import (
     get_workout_by_date_service,
@@ -44,7 +44,7 @@ def get_workout_by_id(
 
 @workouts_router.post("/by_date")
 def create_new_workout(
-    workout_body: CreateWorkoutBody,
+    workout_body: CreateWorkoutFromClient,
     workouts_repo: PostgresSQLRepo = Depends(get_workouts_repo),
 ) -> JSONResponse:
     return create_new_workout_service(

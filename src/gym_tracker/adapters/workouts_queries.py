@@ -1,5 +1,6 @@
 from typing import LiteralString
 
+from psycopg.sql import SQL
 
 select_metadata_by_name: LiteralString = """
     WITH exercise_data AS (
@@ -49,18 +50,38 @@ insert_workout: LiteralString = """
     RETURNING id;
 """
 
+insert_workout_cte = SQL("""
+    WITH ins1 AS (
+        INSERT INTO WORKOUTS (date, duration) values ({date}, {duration})
+        RETURNING id AS workout_id
+    ), ins2 AS (
+        INSERT INTO full_exercises (metadata_id, workout_id) 
+        SELECT m, ins1.workout_id
+            FROM UNNEST({metadata_ids}::int[]) AS m, ins1
+        RETURNING id AS full_exercise_id
+    )
+        SELECT full_exercise_id FROM ins2;
+""")
+
+insert_sets_to_exercise = SQL("""
+    INSERT INTO exercise_sets (weight, repetitions, to_failure, full_exercise_id) 
+    VALUES (
+        %s, %s, %s, %s
+    );
+""")
+
 insert_exercise_to_workout: LiteralString = """
     INSERT INTO full_exercises (metadata_id, workout_id) 
     VALUES ((SELECT id FROM exercises_metadata WHERE name LIKE %s), %s)
     RETURNING id;
 """
 
-insert_sets_to_exercise: LiteralString = """
-    INSERT INTO exercise_sets (weight, repetitions, to_failure, full_exercise_id) 
-    VALUES (
-        %s, %s, %s, %s
-    );
+insert_exercise_by_id_to_workout: LiteralString = """
+    INSERT INTO full_exercises (metadata_id, workout_id) 
+    VALUES (%s, %s)
+    RETURNING id;
 """
+
 
 select_workout_by_date: LiteralString = """
     WITH workout AS (

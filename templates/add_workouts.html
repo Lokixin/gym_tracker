@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add here your new workout!</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+<h1>
+    Here you can add new workouts!
+</h1>
+
+<div>
+    <div id="add_exercise_name">
+        <label for="exercise_name">Exercise Name: </label>
+        <input id="exercise_name" list="exercises-list" required minlength="3">
+        <datalist id="exercises-list">
+
+        </datalist>
+        <button id="add_new_exercise" type="button">
+            Add new exercise
+        </button>
+    </div>
+    <form id="submit_workout">
+        <div id="container">
+
+        </div>
+
+        <br><br>
+        <input type="submit" value="Create!" id="submit-workout-button">
+    </form>
+</div>
+<script src="../static/js/index.js"></script>
+
+</body>

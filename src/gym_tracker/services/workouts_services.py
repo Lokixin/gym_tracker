@@ -2,15 +2,14 @@ from fastapi import Depends, HTTPException
 from starlette import status
 from starlette.responses import JSONResponse
 
-from gym_tracker.adapters.mappers import workout_from_db_to_dto
-from gym_tracker.adapters.repositories import PostgresSQLRepo
-from gym_tracker.domain.model import Workout
+from gym_tracker.adapters.mappers import workout_from_db_to_dto, map_workout_for_to_dto
+from gym_tracker.adapters.repositories import PostgresSQLRepo, logger
 from gym_tracker.entrypoints.dependencies import get_workouts_repo
 from gym_tracker.entrypoints.dtos import (
     WorkoutDTO,
-    CreateWorkoutBody,
     ExerciseSetDTO,
     ExerciseDTO,
+    CreateWorkoutFromClient,
 )
 
 
@@ -18,6 +17,7 @@ def get_workout_by_date_service(
     date: str, workouts_repo: PostgresSQLRepo = Depends(get_workouts_repo)
 ) -> WorkoutDTO:
     if workout := workouts_repo.get_workout_by_date(date):
+        print(workout)
         return workout_from_db_to_dto(exercises=workout[0], workout_metadata=workout[1])
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
@@ -37,14 +37,13 @@ def get_workout_by_id_service(
 
 
 def create_new_workout_service(
-    workout_body: CreateWorkoutBody,
+    workout_body: CreateWorkoutFromClient,
     workouts_repo: PostgresSQLRepo = Depends(get_workouts_repo),
 ) -> JSONResponse:
-    new_workout = Workout(
-        duration=workout_body.duration, date=workout_body.date, exercises=[]
-    )
-    workout_id = workouts_repo.add_workout(new_workout)
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content={"id": workout_id})
+    logger.info(f"Created new workout with: {workout_body}")
+    mapped_sets = map_workout_for_to_dto(workout_body.workout_entries)
+    workouts_repo.add_workout(mapped_sets)
+    return JSONResponse(status_code=status.HTTP_201_CREATED, content={"id": 1})
 
 
 def add_exercise_to_workout_service(

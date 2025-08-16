@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Soy un título!</title>
+    <style>
+        /* Estilos globales */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /* Select del menú desplegable */
+        label, select {
+            font-size: 1em;
+            color: #333;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+
+        select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        select:focus {
+            border-color: #333;
+        }
+
+        /* Contenedor de workouts */
+        #workout_container {
+            width: 100%;
+            max-width: 600px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        #workout_title {
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        /* Lista de ejercicios */
+        ol {
+            list-style-type: none;
+        }
+
+        li {
+            font-size: 1em;
+            color: #555;
+            padding: 8px;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        li:last-child {
+            border-bottom: none;
+        }
+
+        ol ol {
+            margin-top: 5px;
+            margin-left: 15px;
+            font-size: 0.9em;
+        }
+
+        ol ol li {
+            padding: 5px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+<h1>
+    Workouts Clients
+</h1>
+<h2>
+    Your most recent Workouts
+</h2>
+<label for="workouts_dates">Choose a workout:</label>
+<select name="workouts_dates" id="workouts_dates">
+    <option disabled selected value> -- select an option -- </option>
+    {% for date in workouts_dates %}
+    <option value="{{date}}">{{date}}</option>
+    {% endfor %}
+</select>
+<div id="workout_container">
+    <h3 id="workout_title">
+    </h3>
+    <ol id="workout_exercises">
+    </ol>
+</div>
+
+<script>
+    async function get_workout_by_date(event) {
+        const container = document.getElementById("workout_exercises")
+        container.innerHTML = ""
+        const request_path = `${get_workout_path}/${event.target.value}`
+        console.log(request_path)
+        const res = await fetch(request_path, {method: "GET",})
+        const workout_body = await res.json()
+        format_workout(workout_body)
+    }
+
+    function format_workout(workout_body) {
+        const container = document.getElementById("workout_exercises")
+        const workout_title = document.getElementById("workout_title")
+        workout_title.innerText = `Workout from day ${workout_body.date} with duration ${workout_body.duration} minutes`
+
+        for (const exercise of workout_body.exercises) {
+            const entry = document.createElement("li")
+            entry.id = "soy_un_id"
+            let exercise_description = `
+            ${exercise.exercise_metadata.name}
+            (Primary Muscle: ${exercise.exercise_metadata.primary_muscle_group}.
+            Secondary Muscles: ${exercise.exercise_metadata.secondary_muscle_groups})
+            `
+            entry.appendChild(document.createTextNode(exercise_description))
+            container.appendChild(entry)
+
+            const sublist = document.createElement("ol")
+            for (const exercise_set of exercise.exercise_sets) {
+                const sublist_entry = document.createElement("li")
+                let exercise_info = `${exercise_set.weight} kgs x ${exercise_set.repetitions} reps`
+                exercise_info += exercise_set.to_failure ? " (failure)" : ""
+                sublist_entry.appendChild(document.createTextNode(exercise_info))
+                sublist.appendChild(sublist_entry)
+                entry.appendChild(sublist)
+            }
+        }
+    }
+
+    const get_workout_path = "/workouts/by_date"
+    const date_selector = document.getElementById("workouts_dates")
+
+    date_selector.addEventListener(
+        "change",
+        (event) => get_workout_by_date(event)
+    )
+</script>
+
+</body>
+</html>

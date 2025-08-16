@@ -13,10 +13,10 @@ class ExerciseSetDTO(BaseModel):
 
 class ExerciseMetadataDTO(BaseModel):
     name: Annotated[str, Field(..., examples=["bench press"])]
-    primary_muscle_group: MuscleGroup
-    secondary_muscle_groups: Annotated[
-        list[MuscleGroup], Field(..., examples=[["back", "biceps"]])
-    ]
+    primary_muscle_group: str
+    secondary_muscle_groups: (
+        Annotated[list[str | None], Field(..., examples=[["back", "biceps"]])] | None
+    ) = [""]
 
 
 class ExerciseDTO(BaseModel):
@@ -45,3 +45,7 @@ class WorkoutDTO(BaseModel):
 class CreateWorkoutBody(BaseModel):
     date: Annotated[str, Field(..., examples=["2024-06-16"])] | None = None
     duration: Annotated[int, Field(..., examples=[90])] | None = 0
+
+
+class CreateWorkoutFromClient(BaseModel):
+    workout_entries: dict[str, float | int]
