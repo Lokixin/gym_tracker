@@ -3,7 +3,6 @@ from collections import namedtuple
 from datetime import datetime, timezone
 from typing import LiteralString
 
-import psycopg
 from psycopg import Connection
 from psycopg.sql import SQL
 
@@ -87,9 +86,6 @@ class PostgresSQLRepo:
     ) -> int:
         if not workout_date:
             workout_date = datetime.now(timezone.utc).isoformat()
-        print("Workout Date:", workout_date)
-        metadata_ids = [int(metadata_id) for metadata_id in exercises.keys()]
-        print("Metadata ids: ", metadata_ids)
         with self.conn.transaction():
             with self.conn.cursor() as cursor:
                 query = insert_workout_cte.format(
@@ -123,7 +119,6 @@ class PostgresSQLRepo:
                     )
                     for ex in exercise_sets_query_params
                 )
-                print(prepared_ex_values_sql.as_string(self.conn))
                 query = SQL("""
                     INSERT INTO exercise_sets (weight, repetitions, to_failure, full_exercise_id) 
                     VALUES {values};
@@ -186,7 +181,6 @@ class PostgresSQLRepo:
     def get_workout_by_date(
         self, date: str
     ) -> tuple[list[ExerciseRow], WorkoutInfoRow] | None:
-        print(date)
         with self.conn.cursor() as cursor:
             cursor.execute(select_workout_date_and_duration, (date,))
             if workout_metadata := cursor.fetchone():
@@ -226,11 +220,3 @@ class PostgresSQLRepo:
             cursor.execute(query)
             dates = [str(_date[0]) for _date in cursor.fetchall()]
             return dates
-
-
-if __name__ == "__main__":
-    connection_string = "dbname=workouts host=localhost user=admin password=admin"
-    with psycopg.connect(connection_string, autocommit=True) as conn:
-        repo = PostgresSQLRepo(connection=conn)
-        res = repo.get_existing_workouts_dates()
-        print(res)

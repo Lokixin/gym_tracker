@@ -17,7 +17,6 @@ def get_workout_by_date_service(
     date: str, workouts_repo: PostgresSQLRepo = Depends(get_workouts_repo)
 ) -> WorkoutDTO:
     if workout := workouts_repo.get_workout_by_date(date):
-        print(workout)
         return workout_from_db_to_dto(exercises=workout[0], workout_metadata=workout[1])
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
