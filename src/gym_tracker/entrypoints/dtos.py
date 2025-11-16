@@ -46,4 +46,4 @@ class CreateWorkoutBody(BaseModel):
 
 
 class CreateWorkoutFromClient(BaseModel):
-    workout_entries: dict[str, float | int]
+    workout_entries: dict[str, float | int | str]

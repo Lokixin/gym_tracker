@@ -106,15 +106,16 @@ class PostgresSQLRepo:
                             (
                                 _set["weights"],
                                 _set["reps"],
-                                False,
+                                getattr(_set, "to_failure", False),
                                 exercise_id,
                             )
                         )
+                print(exercise_sets_query_params)
                 prepared_ex_values_sql = SQL(",").join(
                     SQL("({weight}, {reps}, {to_failure}, {exercise_id})").format(
                         weight=str(ex[0]),
                         reps=str(ex[1]),
-                        to_failure=str(ex[2]),
+                        to_failure=ex[2],
                         exercise_id=str(ex[3]),
                     )
                     for ex in exercise_sets_query_params
