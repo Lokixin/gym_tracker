@@ -1,6 +1,7 @@
 ALL_PACKAGES := src tests
 
-.PHONY : reformat lint unit app kill docker-app down
+.PHONY : reformat lint unit app kill docker-app down db-upgrade db-downgrade db-stamp db-revision
+
 
 lint:
 	poetry run ruff check $(ALL_PACKAGES) --fix &
@@ -23,3 +24,15 @@ docker-app:
 
 down:
 	docker-compose down
+
+db-upgrade:
+	poetry run alembic upgrade head
+
+db-downgrade:
+	poetry run alembic downgrade -1
+
+db-stamp:
+	poetry run alembic stamp head
+
+db-revision:
+	poetry run alembic revision --autogenerate
