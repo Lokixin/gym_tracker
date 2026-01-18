@@ -13,7 +13,9 @@ class FullExercise(Base):
     )
     workout_id: Mapped[int] = mapped_column(ForeignKey("workouts.id"), nullable=False)
 
-    metadata: Mapped["ExerciseMetadata"] = relationship(back_populates="full_exercises")
+    exercise_metadata: Mapped["ExerciseMetadata"] = relationship(
+        back_populates="full_exercises"
+    )
     workout: Mapped["Workout"] = relationship(back_populates="full_exercises")
     exercise_sets: Mapped[list["ExerciseSet"]] = relationship(
         back_populates="full_exercise"

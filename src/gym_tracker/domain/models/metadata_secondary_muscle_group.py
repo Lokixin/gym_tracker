@@ -14,7 +14,7 @@ class MetadataSecondaryMuscleGroup(Base):
         ForeignKey("muscle_groups.id"), primary_key=True
     )
 
-    metadata: Mapped["ExerciseMetadata"] = relationship(
+    exercise_metadata: Mapped["ExerciseMetadata"] = relationship(
         back_populates="secondary_muscle_groups"
     )
     muscle_group: Mapped["MuscleGroup"] = relationship(

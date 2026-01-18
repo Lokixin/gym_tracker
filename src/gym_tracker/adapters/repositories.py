@@ -5,6 +5,8 @@ from typing import LiteralString
 
 from psycopg import Connection
 from psycopg.sql import SQL
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from gym_tracker.adapters.admin_queries import insert_muscle_group
 from gym_tracker.adapters.workouts_queries import (
@@ -24,6 +26,8 @@ from gym_tracker.domain.model import (
     Exercise,
     ExerciseSet,
 )
+from gym_tracker.domain.models.workout import Workout
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -36,8 +40,9 @@ WorkoutInfoRow = namedtuple("WorkoutInfoRow", "date, duration")
 
 
 class PostgresSQLRepo:
-    def __init__(self, connection: Connection) -> None:
+    def __init__(self, connection: Connection, session: Session) -> None:
         self.conn = connection
+        self.session = session
 
     def get_exercise_metadata_by_name(self, name: str) -> ExerciseMetadata:
         with self.conn.cursor() as cursor:
@@ -216,8 +221,6 @@ class PostgresSQLRepo:
             return results
 
     def get_existing_workouts_dates(self) -> list[str]:
-        query: LiteralString = """SELECT date FROM workouts ORDER BY date DESC;"""
-        with self.conn.cursor() as cursor:
-            cursor.execute(query)
-            dates = [str(_date[0]) for _date in cursor.fetchall()]
-            return dates
+        statement = select(Workout.date).order_by(Workout.date.desc())
+        results = self.session.execute(statement).scalars().all()
+        return [str(workout_date) for workout_date in results]

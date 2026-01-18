@@ -17,8 +17,8 @@ class ExerciseMetadata(Base):
         back_populates="primary_exercises"
     )
     secondary_muscle_groups: Mapped[list["MetadataSecondaryMuscleGroup"]] = (
-        relationship(back_populates="metadata")
+        relationship(back_populates="exercise_metadata")
     )
     full_exercises: Mapped[list["FullExercise"]] = relationship(
-        back_populates="metadata"
+        back_populates="exercise_metadata"
     )
