@@ -164,10 +164,11 @@
       <label class="visually-hidden" for="workouts_dates">Choose a workout</label>
       <select id="workouts_dates" name="workouts_dates">
         <option disabled selected value> -- select an option -- </option>
-        {% for date in workouts_dates %}
-        <option value="{{ date }}">{{ date }}</option>
+        {% for workout in workouts %}
+        <option value="{{ workout.id }}">{{ workout.date }}</option>
         {% endfor %}
       </select>
+
     </div>
 
     <div id="selected_date" class="date-pill" style="display:none"></div>
@@ -184,9 +185,9 @@
   </main>
 
   <script>
-    const get_workout_path = "/workouts/by_date";
+    const get_workout_path = "/workouts/by_id";
     const dateSelector = document.getElementById("workouts_dates");
-    dateSelector.addEventListener("change", getWorkoutByDate);
+    dateSelector.addEventListener("change", getWorkoutById);
 
     function fmtDateChip(value){
       try{
@@ -198,17 +199,19 @@
       return String(value);
     }
 
-    async function getWorkoutByDate(e){
+    async function getWorkoutById(e){
       const chosen = e.target.value;
       const pill = document.getElementById("selected_date");
-      pill.textContent = chosen ? fmtDateChip(chosen) : "";
-      pill.style.display = chosen ? "inline-flex" : "none";
+      const chosenLabel = e.target.options[e.target.selectedIndex]?.text || "";
+      pill.textContent = chosenLabel ? fmtDateChip(chosenLabel) : "";
+      pill.style.display = chosenLabel ? "inline-flex" : "none";
 
       const url = `${get_workout_path}/${encodeURIComponent(chosen)}`;
       const res = await fetch(url, { method: "GET" });
       const workout = await res.json();
       renderWorkout(workout);
     }
+
 
     function renderWorkout(workout){
       const list = document.getElementById("workout_exercises");

@@ -15,11 +15,11 @@ templates = Jinja2Templates(directory="templates")
 def get_workouts_by_date_view(
     request: Request, repo: PostgresSQLRepo = Depends(get_workouts_repo)
 ) -> HTMLResponse:
-    workouts_dates = repo.get_existing_workouts_dates()
+    workouts = repo.get_existing_workouts_dates()
     return templates.TemplateResponse(
         request=request,
         name="read_workouts.html",
-        context={"workouts_dates": workouts_dates},
+        context={"workouts": workouts},
     )
 
 

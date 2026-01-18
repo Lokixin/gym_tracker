@@ -26,6 +26,15 @@ from gym_tracker.domain.model import (
     Exercise,
     ExerciseSet,
 )
+from gym_tracker.domain.models.exercise_metadata import (
+    ExerciseMetadata as ExerciseMetadataModel,
+)
+from gym_tracker.domain.models.exercise_set import ExerciseSet as ExerciseSetModel
+from gym_tracker.domain.models.full_exercise import FullExercise
+from gym_tracker.domain.models.metadata_secondary_muscle_group import (
+    MetadataSecondaryMuscleGroup,
+)
+from gym_tracker.domain.models.muscle_group import MuscleGroup
 from gym_tracker.domain.models.workout import Workout
 
 
@@ -200,16 +209,73 @@ class PostgresSQLRepo:
     def get_workout_by_id(
         self, workout_id: int
     ) -> tuple[list[ExerciseRow], WorkoutInfoRow] | None:
-        with self.conn.cursor() as cursor:
-            cursor.execute(select_date_and_duration_by_id, (workout_id,))
-            if workout_metadata := cursor.fetchone():
-                workout_info = WorkoutInfoRow(*workout_metadata)
-            else:
-                return None
-            cursor.execute(select_workout_by_id, (workout_id,))
-            exercises = [ExerciseRow(*_row) for _row in cursor.fetchall()]
-            cursor.execute(select_date_and_duration_by_id, (workout_id,))
-            return exercises, workout_info
+        workout_statement = select(Workout.date, Workout.duration).where(
+            Workout.id == workout_id
+        )
+        workout_metadata = self.session.execute(workout_statement).first()
+        if not workout_metadata:
+            return None
+        workout_info = WorkoutInfoRow(*workout_metadata)
+
+        exercise_ids_statement = select(FullExercise.id).where(
+            FullExercise.workout_id == workout_id
+        )
+        exercise_ids = self.session.execute(exercise_ids_statement).scalars().all()
+        if not exercise_ids:
+            return [], workout_info
+
+        exercises_statement = (
+            select(
+                ExerciseSetModel.weight,
+                ExerciseSetModel.repetitions,
+                ExerciseSetModel.to_failure,
+                ExerciseMetadataModel.name,
+                MuscleGroup.muscle_group,
+                ExerciseMetadataModel.id,
+            )
+            .join(FullExercise, ExerciseSetModel.full_exercise_id == FullExercise.id)
+            .join(
+                ExerciseMetadataModel,
+                FullExercise.metadata_id == ExerciseMetadataModel.id,
+            )
+            .join(
+                MuscleGroup,
+                ExerciseMetadataModel.primary_muscle_group_id == MuscleGroup.id,
+            )
+            .where(ExerciseSetModel.full_exercise_id.in_(exercise_ids))
+            .order_by(ExerciseSetModel.id)
+        )
+        exercises_rows = self.session.execute(exercises_statement).all()
+        metadata_ids = {row[5] for row in exercises_rows}
+
+        secondary_statement = (
+            select(
+                MetadataSecondaryMuscleGroup.metadata_id,
+                MuscleGroup.muscle_group,
+            )
+            .join(
+                MuscleGroup,
+                MetadataSecondaryMuscleGroup.muscle_group_id == MuscleGroup.id,
+            )
+            .where(MetadataSecondaryMuscleGroup.metadata_id.in_(metadata_ids))
+        )
+        secondary_rows = self.session.execute(secondary_statement).all()
+        secondary_map: dict[int, list[str]] = {}
+        for metadata_id, muscle_group in secondary_rows:
+            secondary_map.setdefault(metadata_id, []).append(muscle_group)
+
+        exercises = [
+            ExerciseRow(
+                weight=row[0],
+                reps=row[1],
+                to_failure=row[2],
+                name=row[3],
+                primary_muscle_group=row[4],
+                secondary_muscle_groups=secondary_map.get(row[5], []),
+            )
+            for row in exercises_rows
+        ]
+        return exercises, workout_info
 
     def get_exercises_name(self, search_term: str) -> list[dict[int, str]]:
         search_query: LiteralString = (
@@ -220,7 +286,10 @@ class PostgresSQLRepo:
             results = [{exercise[0]: exercise[1]} for exercise in cursor.fetchall()]
             return results
 
-    def get_existing_workouts_dates(self) -> list[str]:
-        statement = select(Workout.date).order_by(Workout.date.desc())
-        results = self.session.execute(statement).scalars().all()
-        return [str(workout_date) for workout_date in results]
+    def get_existing_workouts_dates(self) -> list[dict[str, str | int]]:
+        statement = select(Workout.id, Workout.date).order_by(Workout.date.desc())
+        results = self.session.execute(statement).all()
+        return [
+            {"id": workout_id, "date": str(workout_date)}
+            for workout_id, workout_date in results
+        ]
