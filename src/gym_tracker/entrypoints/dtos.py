@@ -2,8 +2,6 @@ from typing import Annotated
 
 from pydantic import BaseModel, Field
 
-from gym_tracker.domain.model import MuscleGroup
-
 
 class ExerciseSetDTO(BaseModel):
     weight: Annotated[float, Field(..., examples=[100])]
@@ -48,4 +46,4 @@ class CreateWorkoutBody(BaseModel):
 
 
 class CreateWorkoutFromClient(BaseModel):
-    workout_entries: dict[str, float | int]
+    workout_entries: dict[str, float | int | str]

@@ -84,6 +84,8 @@ def map_workout_for_to_dto(workout_entries: dict[str, int | float]) -> dict:
         exercise_name, attr, series = key.split(".")
         if attr == "reps":
             value = int(value)
+        if attr == "to_failure":
+            value = True if value == "on" else False
         if exercise_name not in output:
             output[exercise_name] = [{attr: value}]
         else:
@@ -91,4 +93,5 @@ def map_workout_for_to_dto(workout_entries: dict[str, int | float]) -> dict:
                 output[exercise_name][len(output[exercise_name]) - 1][attr] = value
             else:
                 output[exercise_name].append({attr: value})
+    print(output)
     return output

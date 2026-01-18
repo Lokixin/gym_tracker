@@ -1,171 +1,292 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Soy un título!</title>
-    <style>
-        /* Estilos globales */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
+  <meta charset="UTF-8" />
+  <title>Fitness • Your Plan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --bg:#0e1217;
+      --card:#171b21;
+      --chip:#20252d;
+      --border:#2a3038;
+      --muted:#aeb6c1;
+      --accent:#d7ff57;
+      --lav:#cdbbff;
+    }
 
-        body {
-            background-color: #f4f6f8;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            padding: 20px;
-        }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      background: var(--bg);
+      color:#eef2f6;
+    }
 
-        h1 {
-            font-size: 2em;
-            margin-bottom: 10px;
-            color: #333;
-        }
+    /* Full-page container */
+    .phone{
+      width:100%;
+      min-height:100svh;
+      background: var(--bg);
+      border-radius:0;
+      padding: clamp(14px, 3vw, 22px);
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
 
-        h2 {
-            font-size: 1.5em;
-            color: #666;
-            margin-bottom: 20px;
-        }
+    .header{
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .title{ font-weight:800; font-size:clamp(18px, 2.4vw, 24px); letter-spacing:.3px; }
+    .bubble{
+      width:40px; height:40px; display:grid; place-items:center;
+      border-radius:12px; background:#1b2027; border:1px solid var(--border); color:#cfd5dd;
+      font-weight:800;
+    }
 
-        /* Select del menú desplegable */
-        label, select {
-            font-size: 1em;
-            color: #333;
-            margin-bottom: 10px;
-            padding: 5px;
-        }
+    .row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .chip{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:10px 12px; font-size:12px; font-weight:700;
+      border-radius:999px; background: var(--chip); border:1px solid var(--border);
+      color:#e3e8ef;
+    }
+    .chip.accent{ background:#20260f; color:#ecff76; border-color:#303a14; }
+    .hint{ color:var(--muted); font-size:12px; }
 
-        select {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            cursor: pointer;
-            outline: none;
-        }
+    select{
+      appearance:none;
+      background: var(--chip);
+      color:#e7ecf3;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px 36px 10px 12px;
+      font-weight:700;
+    }
+    select:focus{ outline:2px solid #39414b; }
 
-        select:focus {
-            border-color: #333;
-        }
+    .date-pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:10px 14px; border-radius:12px;
+      background:#0f1216; border:1px solid var(--border); color:#d8dee7;
+    }
 
-        /* Contenedor de workouts */
-        #workout_container {
-            width: 100%;
-            max-width: 600px;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
-        }
+    #workout_title{ margin-top:2px; font-weight:800; color:#e8edf5; }
 
-        #workout_title {
-            font-size: 1.2em;
-            color: #333;
-            margin-bottom: 15px;
-        }
+    /* List/grid of exercise cards */
+    #workout_exercises{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    @media (min-width:900px){
+      #workout_exercises{ grid-template-columns: 1fr 1fr; }
+    }
 
-        /* Lista de ejercicios */
-        ol {
-            list-style-type: none;
-        }
+    .card{
+      background: linear-gradient(180deg, #1a1f26 0%, #14181e 100%);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:14px;
+    }
+    .top{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+    }
+    .name{ font-weight:800; font-size:18px; letter-spacing:.2px; }
 
-        li {
-            font-size: 1em;
-            color: #555;
-            padding: 8px;
-            border-bottom: 1px solid #eaeaea;
-        }
+    .count{
+      min-width:56px; height:56px; border-radius:999px;
+      background:#1a1822; color:#f0eaff; border:1px solid #3f3651;
+      display:grid; place-items:center; font-weight:800; font-size:12px; padding:6px;
+      text-align:center; box-shadow: inset 0 0 0 6px #12161b;
+    }
 
-        li:last-child {
-            border-bottom: none;
-        }
+    .badges{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
 
-        ol ol {
-            margin-top: 5px;
-            margin-left: 15px;
-            font-size: 0.9em;
-        }
+    /* Higher-contrast badges */
+    .badge{
+      padding:6px 10px; border-radius:999px; font-size:11px; font-weight:800;
+      border:1px solid #323846; color:#e7edf5; background:#1d2129;
+    }
+    .badge.primary{
+      background:#17200a;        /* darker bg */
+      border-color:#2b3812;
+      color:#efff8e;             /* brighter text */
+    }
+    .badge.secondary{
+      background:#1a1523;        /* darker bg */
+      border-color:#41325a;
+      color:#f6eeff;             /* brighter text */
+    }
 
-        ol ol li {
-            padding: 5px;
-            color: #777;
-        }
-    </style>
+    /* SETS: vertical stack, full-width rows (pill look preserved) */
+    .sets{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:8px;
+      margin-top:12px;
+    }
+    .set{
+      background:#20252d;
+      border:1px solid var(--border);
+      color:#eef3fb;
+      padding:10px 12px;
+      border-radius:12px;
+      font-weight:800;
+      font-size:12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      width:100%;
+    }
+    .set.fail{ background:#2b1b1b; border-color:#3a2323; color:#ffd7d7; }
+
+    .dock{ margin-top:auto; display:flex; justify-content:center; gap:12px; padding-top:8px; }
+    .dot{
+      width:52px; height:42px; border-radius:16px; display:grid; place-items:center;
+      background:#1b2027; border:1px solid var(--border); color:#d5dbe4; font-weight:900;
+    }
+  </style>
 </head>
 <body>
-<h1>
-    Workouts Clients
-</h1>
-<h2>
-    Your most recent Workouts
-</h2>
-<label for="workouts_dates">Choose a workout:</label>
-<select name="workouts_dates" id="workouts_dates">
-    <option disabled selected value> -- select an option -- </option>
-    {% for date in workouts_dates %}
-    <option value="{{date}}">{{date}}</option>
-    {% endfor %}
-</select>
-<div id="workout_container">
-    <h3 id="workout_title">
-    </h3>
-    <ol id="workout_exercises">
-    </ol>
-</div>
 
-<script>
-    async function get_workout_by_date(event) {
-        const container = document.getElementById("workout_exercises")
-        container.innerHTML = ""
-        const request_path = `${get_workout_path}/${event.target.value}`
-        console.log(request_path)
-        const res = await fetch(request_path, {method: "GET",})
-        const workout_body = await res.json()
-        format_workout(workout_body)
+  <main class="phone" aria-label="Your Plan">
+    <header class="header">
+      <div class="title">Your Plan</div>
+      <div class="bubble" title="Theme">☾</div>
+    </header>
+
+    <div class="row">
+      <span class="chip accent">All workouts</span>
+      <span class="hint">Pick a date</span>
+      <label class="visually-hidden" for="workouts_dates">Choose a workout</label>
+      <select id="workouts_dates" name="workouts_dates">
+        <option disabled selected value> -- select an option -- </option>
+        {% for date in workouts_dates %}
+        <option value="{{ date }}">{{ date }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div id="selected_date" class="date-pill" style="display:none"></div>
+
+    <h3 id="workout_title">Select a date to view the workout</h3>
+
+    <section id="workout_exercises" aria-live="polite"></section>
+
+    <div class="dock" aria-hidden="true">
+      <div class="dot">◷</div>
+      <div class="dot">⚙</div>
+      <div class="dot">✚</div>
+    </div>
+  </main>
+
+  <script>
+    const get_workout_path = "/workouts/by_date";
+    const dateSelector = document.getElementById("workouts_dates");
+    dateSelector.addEventListener("change", getWorkoutByDate);
+
+    function fmtDateChip(value){
+      try{
+        const d = new Date(value);
+        if(!isNaN(d)) return d.toLocaleString([], {
+          year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit"
+        });
+      }catch{}
+      return String(value);
     }
 
-    function format_workout(workout_body) {
-        const container = document.getElementById("workout_exercises")
-        const workout_title = document.getElementById("workout_title")
-        workout_title.innerText = `Workout from day ${workout_body.date} with duration ${workout_body.duration} minutes`
+    async function getWorkoutByDate(e){
+      const chosen = e.target.value;
+      const pill = document.getElementById("selected_date");
+      pill.textContent = chosen ? fmtDateChip(chosen) : "";
+      pill.style.display = chosen ? "inline-flex" : "none";
 
-        for (const exercise of workout_body.exercises) {
-            const entry = document.createElement("li")
-            entry.id = "soy_un_id"
-            let exercise_description = `
-            ${exercise.exercise_metadata.name}
-            (Primary Muscle: ${exercise.exercise_metadata.primary_muscle_group}.
-            Secondary Muscles: ${exercise.exercise_metadata.secondary_muscle_groups})
-            `
-            entry.appendChild(document.createTextNode(exercise_description))
-            container.appendChild(entry)
+      const url = `${get_workout_path}/${encodeURIComponent(chosen)}`;
+      const res = await fetch(url, { method: "GET" });
+      const workout = await res.json();
+      renderWorkout(workout);
+    }
 
-            const sublist = document.createElement("ol")
-            for (const exercise_set of exercise.exercise_sets) {
-                const sublist_entry = document.createElement("li")
-                let exercise_info = `${exercise_set.weight} kgs x ${exercise_set.repetitions} reps`
-                exercise_info += exercise_set.to_failure ? " (failure)" : ""
-                sublist_entry.appendChild(document.createTextNode(exercise_info))
-                sublist.appendChild(sublist_entry)
-                entry.appendChild(sublist)
-            }
+    function renderWorkout(workout){
+      const list = document.getElementById("workout_exercises");
+      const title = document.getElementById("workout_title");
+      list.innerHTML = "";
+
+      const day = (workout.date ?? "").toString().slice(0,10);
+      const duration = workout.duration ?? 0;
+      title.textContent = `Workout • ${day} • ${duration} min`;
+
+      (workout.exercises || []).forEach((ex, idx) => {
+        const card = document.createElement("article");
+        card.className = "card";
+
+        // Header
+        const top = document.createElement("div");
+        top.className = "top";
+        const left = document.createElement("div");
+        const name = document.createElement("div");
+        name.className = "name";
+        name.textContent = ex?.exercise_metadata?.name || `Exercise ${idx+1}`;
+        left.appendChild(name);
+
+        const count = document.createElement("div");
+        count.className = "count";
+        const totalSets = (ex.exercise_sets || []).length;
+        count.innerHTML = `<div>${totalSets} ${totalSets===1?"set":"sets"}</div>`;
+
+        top.appendChild(left);
+        top.appendChild(count);
+        card.appendChild(top);
+
+        // Badges
+        const badges = document.createElement("div");
+        badges.className = "badges";
+        const pmg = ex?.exercise_metadata?.primary_muscle_group;
+
+        if (pmg && String(pmg).trim()){
+          const b1 = document.createElement("span");
+          b1.className = "badge primary";
+          b1.textContent = `Primary • ${pmg}`;
+          badges.appendChild(b1);
         }
+
+        const smg = ex?.exercise_metadata?.secondary_muscle_groups;
+        if (smg && String(smg).trim()){       // ← only show if present
+          const b2 = document.createElement("span");
+          b2.className = "badge secondary";
+          b2.textContent = `Secondary • ${smg}`;
+          badges.appendChild(b2);
+        }
+        if (badges.children.length) card.appendChild(badges);
+
+        // Sets (vertical)
+        const setsWrap = document.createElement("div");
+        setsWrap.className = "sets";
+        (ex.exercise_sets || []).forEach(s => {
+          const row = document.createElement("span");
+          row.className = "set";
+          row.textContent = `${s.weight} kg × ${s.repetitions}`;
+          if (s.to_failure) {
+            row.classList.add("fail");
+            row.textContent += " • failure";
+          }
+          setsWrap.appendChild(row);
+        });
+        card.appendChild(setsWrap);
+
+        list.appendChild(card);
+      });
+
+      if (!list.children.length){
+        const empty = document.createElement("div");
+        empty.className = "chip";
+        empty.textContent = "No exercises found for this workout.";
+        list.appendChild(empty);
+      }
     }
-
-    const get_workout_path = "/workouts/by_date"
-    const date_selector = document.getElementById("workouts_dates")
-
-    date_selector.addEventListener(
-        "change",
-        (event) => get_workout_by_date(event)
-    )
-</script>
-
+  </script>
 </body>
 </html>

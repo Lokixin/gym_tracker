@@ -1,35 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Add here your new workout!</title>
-    <link rel="stylesheet" href="../static/css/style.css">
+  <meta charset="UTF-8" />
+  <title>Add a new workout</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- adjust paths if needed -->
+  <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-<h1>
-    Here you can add new workouts!
-</h1>
 
-<div>
-    <div id="add_exercise_name">
-        <label for="exercise_name">Exercise Name: </label>
-        <input id="exercise_name" list="exercises-list" required minlength="3">
-        <datalist id="exercises-list">
+  <main class="phone" aria-label="Add Workout">
+    <header class="header">
+      <div class="title">New Workout</div>
+      <div class="bubble" title="Theme">☾</div>
+    </header>
 
-        </datalist>
-        <button id="add_new_exercise" type="button">
-            Add new exercise
-        </button>
-    </div>
-    <form id="submit_workout">
-        <div id="container">
+    <!-- meta row (optional) -->
+    <section class="row">
+      <div class="field">
+        <label for="started_at">When</label>
+        <input id="started_at" name="started_at" type="datetime-local" class="input" />
+      </div>
+      <div class="field grow">
+        <label for="notes">Notes</label>
+        <input id="notes" name="notes" type="text" class="input" placeholder="Optional notes..." />
+      </div>
+    </section>
 
-        </div>
+    <!-- exercise picker -->
+     <section class="row stack-on-mobile">
+      <span class="chip accent">Exercises</span>
 
-        <br><br>
-        <input type="submit" value="Create!" id="submit-workout-button">
+      <div class="field grow">
+        <label for="exercise_name">Exercise name</label>
+        <input id="exercise_name" class="input" list="exercises-list" placeholder="e.g., Back Squat" minlength="3">
+        <datalist id="exercises-list"></datalist>
+        <div id="exercise_help" class="help">Start typing and choose from the suggestions.</div>
+      </div>
+
+      <button id="add_new_exercise" type="button" class="btn" disabled>＋ Add exercise</button>
+    </section>
+
+    <!-- builder lives inside the form so FormData picks everything -->
+    <form id="submit_workout" class="stretch">
+      <section id="builder" class="grid"></section>
+
+      <div class="submit-bar">
+        <button class="btn ghost" type="button" id="clear_all">Clear</button>
+        <button class="btn primary" id="submit-workout-button" type="submit">Create workout</button>
+      </div>
     </form>
-</div>
-<script src="../static/js/index.js"></script>
+  </main>
 
+  <script>
+    // Configure endpoints (keep your originals by default)
+    window.EXERCISE_SUGGESTIONS_ENDPOINT = "http://localhost:5555/search/exercises";
+    window.CREATE_WORKOUT_ENDPOINT      = "http://localhost:5555/workouts/by_date";
+  </script>
+  <script src="/static/js/add_workout.js" defer></script>
 </body>
+</html>

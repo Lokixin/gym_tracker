@@ -6,12 +6,13 @@ from starlette.templating import Jinja2Templates
 from gym_tracker.adapters.repositories import PostgresSQLRepo
 from gym_tracker.entrypoints.dependencies import get_workouts_repo
 
-client_router = APIRouter(prefix="/client")
+
+client_router = APIRouter(prefix="/app")
 templates = Jinja2Templates(directory="templates")
 
 
-@client_router.get("/workouts")
-def home(
+@client_router.get("/workouts/list")
+def get_workouts_by_date_view(
     request: Request, repo: PostgresSQLRepo = Depends(get_workouts_repo)
 ) -> HTMLResponse:
     workouts_dates = repo.get_existing_workouts_dates()
@@ -22,8 +23,8 @@ def home(
     )
 
 
-@client_router.get("/new_workout")
-def add_new_workout(
+@client_router.get("/workouts/add")
+def add_new_workout_view(
     request: Request,
 ) -> HTMLResponse:
     return templates.TemplateResponse(request=request, name="add_workouts.html")
