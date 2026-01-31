@@ -164,10 +164,11 @@
       <label class="visually-hidden" for="workouts_dates">Choose a workout</label>
       <select id="workouts_dates" name="workouts_dates">
         <option disabled selected value> -- select an option -- </option>
-        {% for date in workouts_dates %}
-        <option value="{{ date }}">{{ date }}</option>
+        {% for workout in workouts %}
+        <option value="{{ workout.id }}">{{ workout.date }}</option>
         {% endfor %}
       </select>
+
     </div>
 
     <div id="selected_date" class="date-pill" style="display:none"></div>
@@ -183,110 +184,8 @@
     </div>
   </main>
 
-  <script>
-    const get_workout_path = "/workouts/by_date";
-    const dateSelector = document.getElementById("workouts_dates");
-    dateSelector.addEventListener("change", getWorkoutByDate);
+  <script src="/static/js/config.js" defer></script>
+  <script src="/static/js/read_workouts.js" defer></script>
 
-    function fmtDateChip(value){
-      try{
-        const d = new Date(value);
-        if(!isNaN(d)) return d.toLocaleString([], {
-          year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit"
-        });
-      }catch{}
-      return String(value);
-    }
-
-    async function getWorkoutByDate(e){
-      const chosen = e.target.value;
-      const pill = document.getElementById("selected_date");
-      pill.textContent = chosen ? fmtDateChip(chosen) : "";
-      pill.style.display = chosen ? "inline-flex" : "none";
-
-      const url = `${get_workout_path}/${encodeURIComponent(chosen)}`;
-      const res = await fetch(url, { method: "GET" });
-      const workout = await res.json();
-      renderWorkout(workout);
-    }
-
-    function renderWorkout(workout){
-      const list = document.getElementById("workout_exercises");
-      const title = document.getElementById("workout_title");
-      list.innerHTML = "";
-
-      const day = (workout.date ?? "").toString().slice(0,10);
-      const duration = workout.duration ?? 0;
-      title.textContent = `Workout • ${day} • ${duration} min`;
-
-      (workout.exercises || []).forEach((ex, idx) => {
-        const card = document.createElement("article");
-        card.className = "card";
-
-        // Header
-        const top = document.createElement("div");
-        top.className = "top";
-        const left = document.createElement("div");
-        const name = document.createElement("div");
-        name.className = "name";
-        name.textContent = ex?.exercise_metadata?.name || `Exercise ${idx+1}`;
-        left.appendChild(name);
-
-        const count = document.createElement("div");
-        count.className = "count";
-        const totalSets = (ex.exercise_sets || []).length;
-        count.innerHTML = `<div>${totalSets} ${totalSets===1?"set":"sets"}</div>`;
-
-        top.appendChild(left);
-        top.appendChild(count);
-        card.appendChild(top);
-
-        // Badges
-        const badges = document.createElement("div");
-        badges.className = "badges";
-        const pmg = ex?.exercise_metadata?.primary_muscle_group;
-
-        if (pmg && String(pmg).trim()){
-          const b1 = document.createElement("span");
-          b1.className = "badge primary";
-          b1.textContent = `Primary • ${pmg}`;
-          badges.appendChild(b1);
-        }
-
-        const smg = ex?.exercise_metadata?.secondary_muscle_groups;
-        if (smg && String(smg).trim()){       // ← only show if present
-          const b2 = document.createElement("span");
-          b2.className = "badge secondary";
-          b2.textContent = `Secondary • ${smg}`;
-          badges.appendChild(b2);
-        }
-        if (badges.children.length) card.appendChild(badges);
-
-        // Sets (vertical)
-        const setsWrap = document.createElement("div");
-        setsWrap.className = "sets";
-        (ex.exercise_sets || []).forEach(s => {
-          const row = document.createElement("span");
-          row.className = "set";
-          row.textContent = `${s.weight} kg × ${s.repetitions}`;
-          if (s.to_failure) {
-            row.classList.add("fail");
-            row.textContent += " • failure";
-          }
-          setsWrap.appendChild(row);
-        });
-        card.appendChild(setsWrap);
-
-        list.appendChild(card);
-      });
-
-      if (!list.children.length){
-        const empty = document.createElement("div");
-        empty.className = "chip";
-        empty.textContent = "No exercises found for this workout.";
-        list.appendChild(empty);
-      }
-    }
-  </script>
 </body>
 </html>
