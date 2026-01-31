@@ -27,6 +27,9 @@ alembic = "^1.14.0"
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.4.5"
 
+[tool.ruff.lint.per-file-ignores]
+"src/gym_tracker/domain/models/*" = ["F821"]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

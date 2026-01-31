@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import os
 from logging.config import fileConfig
 
@@ -7,14 +5,6 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from gym_tracker.domain.models.base import Base
-from gym_tracker.domain.models.exercise_metadata import ExerciseMetadata
-from gym_tracker.domain.models.exercise_set import ExerciseSet
-from gym_tracker.domain.models.full_exercise import FullExercise
-from gym_tracker.domain.models.metadata_secondary_muscle_group import (
-    MetadataSecondaryMuscleGroup,
-)
-from gym_tracker.domain.models.muscle_group import MuscleGroup
-from gym_tracker.domain.models.workout import Workout
 
 config = context.config
 

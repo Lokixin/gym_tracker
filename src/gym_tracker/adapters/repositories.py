@@ -16,8 +16,6 @@ from gym_tracker.adapters.workouts_queries import (
     insert_sets_to_exercise,
     select_workout_by_date,
     select_workout_date_and_duration,
-    select_workout_by_id,
-    select_date_and_duration_by_id,
     insert_exercise_by_id_to_workout,
     insert_workout_cte,
 )
