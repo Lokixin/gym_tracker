@@ -5,7 +5,7 @@ from typing import LiteralString
 
 from psycopg import Connection
 from psycopg.sql import SQL
-from sqlalchemy import select
+from sqlalchemy import select, insert
 from sqlalchemy.orm import Session
 
 from gym_tracker.adapters.admin_queries import insert_muscle_group
@@ -98,6 +98,36 @@ class PostgresSQLRepo:
     ) -> int:
         if not workout_date:
             workout_date = datetime.now(timezone.utc).isoformat()
+        with self.session.begin():
+            try:
+                insert_workout_statement = insert(Workout).values(
+                    date=workout_date,
+                    duration=workout_duration,
+                )
+                res = self.session.execute(insert_workout_statement)
+                workout_id = res.inserted_primary_key[0]
+
+                full_exercises_dict = [
+                    {
+                        "metadata_id": int(metadata_id),
+                        "workout_id": workout_id,
+                    }
+                    for metadata_id in exercises.keys()
+                ]
+                insert_exercises_statement = insert(FullExercise).values(
+                    full_exercises_dict
+                )
+                logger.info(insert_exercises_statement)
+                result = self.session.execute(insert_exercises_statement)
+                logger.info("Insert exercises result: %s", result.inserted_primary_key)
+                self.session.commit()
+                return
+            except Exception as e:
+                logger.error(e)
+                self.session.rollback()
+                return
+
+
         with self.conn.transaction():
             with self.conn.cursor() as cursor:
                 query = insert_workout_cte.format(
@@ -122,7 +152,6 @@ class PostgresSQLRepo:
                                 exercise_id,
                             )
                         )
-                print(exercise_sets_query_params)
                 prepared_ex_values_sql = SQL(",").join(
                     SQL("({weight}, {reps}, {to_failure}, {exercise_id})").format(
                         weight=str(ex[0]),

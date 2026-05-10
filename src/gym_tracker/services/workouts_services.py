@@ -40,7 +40,6 @@ def create_new_workout_service(
     workout_body: CreateWorkoutFromClient,
     workouts_repo: PostgresSQLRepo = Depends(get_workouts_repo),
 ) -> JSONResponse:
-    logger.info(f"Created new workout with: {workout_body}")
     mapped_sets = map_workout_for_to_dto(workout_body.workout_entries)
     workouts_repo.add_workout(mapped_sets)
     return JSONResponse(status_code=status.HTTP_201_CREATED, content={"id": 1})

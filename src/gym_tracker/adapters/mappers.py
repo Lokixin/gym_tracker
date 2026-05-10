@@ -93,5 +93,4 @@ def map_workout_for_to_dto(workout_entries: dict[str, int | float]) -> dict:
                 output[exercise_name][len(output[exercise_name]) - 1][attr] = value
             else:
                 output[exercise_name].append({attr: value})
-    print(output)
     return output
