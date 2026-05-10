@@ -1,4 +1,3 @@
-from psycopg import Connection
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -7,11 +6,10 @@ from gym_tracker.domain.models.workout import Workout
 
 
 def test_add_workout_inserts_workout_exercises_and_sets(
-    db_connection: Connection,
     db_session: Session,
     seeded_metadata: dict[str, int],
 ) -> None:
-    repo = PostgresSQLRepo(db_connection, db_session)
+    repo = PostgresSQLRepo(session=db_session)
 
     workout_id = repo.add_workout(
         {
@@ -40,11 +38,10 @@ def test_add_workout_inserts_workout_exercises_and_sets(
 
 
 def test_add_workout_works_when_session_already_has_transaction(
-    db_connection: Connection,
     db_session: Session,
     seeded_metadata: dict[str, int],
 ) -> None:
-    repo = PostgresSQLRepo(db_connection, db_session)
+    repo = PostgresSQLRepo(session=db_session)
     db_session.execute(select(Workout.id))
 
     workout_id = repo.add_workout(
@@ -58,3 +55,34 @@ def test_add_workout_works_when_session_already_has_transaction(
     )
 
     assert workout_id > 0
+
+
+def test_get_workout_by_date_returns_existing_workout(
+    db_session: Session,
+    seeded_metadata: dict[str, int],
+) -> None:
+    repo = PostgresSQLRepo(session=db_session)
+    workout_id = repo.add_workout(
+        {
+            str(seeded_metadata["bench_press"]): [
+                {"weight": 80.0, "repetitions": 10, "to_failure": True},
+            ]
+        },
+        workout_date="2024-06-16",
+        workout_duration=90,
+    )
+
+    workout = repo.get_workout_by_date("2024-06-16")
+
+    assert workout == repo.get_workout_by_id(workout_id)
+
+
+def test_get_exercises_name_uses_session(
+    db_session: Session,
+    seeded_metadata: dict[str, int],
+) -> None:
+    repo = PostgresSQLRepo(session=db_session)
+
+    assert repo.get_exercises_name("bench") == [
+        {seeded_metadata["bench_press"]: "Bench Press"}
+    ]
