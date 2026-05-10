@@ -26,6 +26,7 @@ alembic = "^1.14.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.4.5"
+httpx = "^0.28.1"
 
 [tool.ruff.lint.per-file-ignores]
 "src/gym_tracker/domain/models/*" = ["F821"]

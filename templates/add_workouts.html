@@ -15,18 +15,6 @@
       <div class="bubble" title="Theme">☾</div>
     </header>
 
-    <!-- meta row (optional) -->
-    <section class="row">
-      <div class="field">
-        <label for="started_at">When</label>
-        <input id="started_at" name="started_at" type="datetime-local" class="input" />
-      </div>
-      <div class="field grow">
-        <label for="notes">Notes</label>
-        <input id="notes" name="notes" type="text" class="input" placeholder="Optional notes..." />
-      </div>
-    </section>
-
     <!-- exercise picker -->
      <section class="row stack-on-mobile">
       <span class="chip accent">Exercises</span>
@@ -43,6 +31,16 @@
 
     <!-- builder lives inside the form so FormData picks everything -->
     <form id="submit_workout" class="stretch">
+      <section class="row">
+        <div class="field">
+          <label for="started_at">When</label>
+          <input id="started_at" name="started_at" type="datetime-local" class="input" />
+        </div>
+        <div class="field">
+          <label for="duration">Duration</label>
+          <input id="duration" name="duration" type="number" min="0" step="1" class="input" placeholder="Minutes" />
+        </div>
+      </section>
       <section id="builder" class="grid"></section>
 
       <div class="submit-bar">

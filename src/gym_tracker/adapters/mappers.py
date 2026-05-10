@@ -78,19 +78,36 @@ def workout_from_db_to_dto(
     return workout_dto
 
 
-def map_workout_for_to_dto(workout_entries: dict[str, int | float]) -> dict:
-    output = {}
+def map_workout_for_to_dto(workout_entries: dict[str, float | int | str]) -> dict:
+    output: dict[str, list[dict[str, float | int | bool]]] = {}
     for key, value in workout_entries.items():
-        exercise_name, attr, series = key.split(".")
-        if attr == "reps":
-            value = int(value)
-        if attr == "to_failure":
-            value = True if value == "on" else False
-        if exercise_name not in output:
-            output[exercise_name] = [{attr: value}]
+        try:
+            exercise_name, attr, series = key.split(".")
+            set_index = int(series)
+        except ValueError as exc:
+            raise ValueError(f"Invalid workout entry key: {key}") from exc
+        if not exercise_name:
+            raise ValueError(f"Invalid workout entry key: {key}")
+        parsed_value: float | int | bool
+        if attr == "weights":
+            attr = "weight"
+            parsed_value = float(value)
+        elif attr == "reps":
+            attr = "repetitions"
+            parsed_value = int(value)
+        elif attr == "to_failure":
+            parsed_value = True if value == "on" else False
         else:
-            if attr not in output[exercise_name][len(output[exercise_name]) - 1]:
-                output[exercise_name][len(output[exercise_name]) - 1][attr] = value
-            else:
-                output[exercise_name].append({attr: value})
+            raise ValueError(f"Invalid workout entry attribute: {attr}")
+        if exercise_name not in output:
+            output[exercise_name] = []
+        while len(output[exercise_name]) <= set_index:
+            output[exercise_name].append({"to_failure": False})
+        output[exercise_name][set_index][attr] = parsed_value
+    for exercise_name, exercise_sets in output.items():
+        for index, exercise_set in enumerate(exercise_sets):
+            if "weight" not in exercise_set or "repetitions" not in exercise_set:
+                raise ValueError(
+                    f"Exercise {exercise_name} set {index} requires weight and repetitions"
+                )
     return output
