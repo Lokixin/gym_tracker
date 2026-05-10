@@ -1,7 +1,9 @@
 from psycopg import Connection
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from gym_tracker.adapters.repositories import PostgresSQLRepo
+from gym_tracker.domain.models.workout import Workout
 
 
 def test_add_workout_inserts_workout_exercises_and_sets(
@@ -35,3 +37,24 @@ def test_add_workout_inserts_workout_exercises_and_sets(
     assert exercises[0].name == "Bench Press"
     assert exercises[0].primary_muscle_group == "Chest"
     assert exercises[0].secondary_muscle_groups == ["Triceps"]
+
+
+def test_add_workout_works_when_session_already_has_transaction(
+    db_connection: Connection,
+    db_session: Session,
+    seeded_metadata: dict[str, int],
+) -> None:
+    repo = PostgresSQLRepo(db_connection, db_session)
+    db_session.execute(select(Workout.id))
+
+    workout_id = repo.add_workout(
+        {
+            str(seeded_metadata["bench_press"]): [
+                {"weight": 80.0, "repetitions": 10, "to_failure": True},
+            ]
+        },
+        workout_date="2024-06-16",
+        workout_duration=90,
+    )
+
+    assert workout_id > 0

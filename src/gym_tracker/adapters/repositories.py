@@ -98,36 +98,60 @@ class PostgresSQLRepo:
             workout_date_value = datetime.now(timezone.utc).date()
         else:
             workout_date_value = date.fromisoformat(workout_date[:10])
-        with self.session.begin():
-            workout = Workout(
-                date=workout_date_value,
-                duration=workout_duration or 0,
+        owns_transaction = not self.session.in_transaction()
+        if owns_transaction:
+            with self.session.begin():
+                return self._add_workout_records(
+                    exercises=exercises,
+                    workout_date=workout_date_value,
+                    workout_duration=workout_duration,
+                )
+
+        try:
+            return self._add_workout_records(
+                exercises=exercises,
+                workout_date=workout_date_value,
+                workout_duration=workout_duration,
             )
-            self.session.add(workout)
+        except Exception:
+            self.session.rollback()
+            raise
+
+    def _add_workout_records(
+        self,
+        exercises: dict[str, list[dict[str, int | float | bool]]],
+        workout_date: date,
+        workout_duration: int | None,
+    ) -> int:
+        workout = Workout(
+            date=workout_date,
+            duration=workout_duration or 0,
+        )
+        self.session.add(workout)
+        self.session.flush()
+
+        for metadata_id, exercise_sets in exercises.items():
+            full_exercise = FullExercise(
+                metadata_id=int(metadata_id),
+                workout_id=workout.id,
+            )
+            self.session.add(full_exercise)
             self.session.flush()
 
-            for metadata_id, exercise_sets in exercises.items():
-                full_exercise = FullExercise(
-                    metadata_id=int(metadata_id),
-                    workout_id=workout.id,
+            if exercise_sets:
+                self.session.add_all(
+                    [
+                        ExerciseSetModel(
+                            weight=float(exercise_set["weight"]),
+                            repetitions=int(exercise_set["repetitions"]),
+                            to_failure=bool(exercise_set.get("to_failure", False)),
+                            full_exercise_id=full_exercise.id,
+                        )
+                        for exercise_set in exercise_sets
+                    ]
                 )
-                self.session.add(full_exercise)
-                self.session.flush()
 
-                if exercise_sets:
-                    self.session.add_all(
-                        [
-                            ExerciseSetModel(
-                                weight=float(exercise_set["weight"]),
-                                repetitions=int(exercise_set["repetitions"]),
-                                to_failure=bool(exercise_set.get("to_failure", False)),
-                                full_exercise_id=full_exercise.id,
-                            )
-                            for exercise_set in exercise_sets
-                        ]
-                    )
-
-            return workout.id
+        return workout.id
 
     def add_exercise_to_workout(self, exercise: Exercise, workout_id: int) -> int:
         exercise_name = exercise.exercise_metadata.name

@@ -1,5 +1,6 @@
 from collections.abc import Generator
 import os
+from urllib.parse import urlparse
 
 import psycopg
 import pytest
@@ -20,7 +21,14 @@ def database_url() -> str:
     url = os.getenv("DATABASE_URL")
     if not url:
         pytest.fail("DATABASE_URL is required for integration tests")
+    validate_test_database_url(url)
     return url
+
+
+def validate_test_database_url(url: str) -> None:
+    database_name = urlparse(url).path.lstrip("/")
+    if not database_name.endswith("_test"):
+        pytest.fail("Integration DATABASE_URL must point to a database ending in _test")
 
 
 @pytest.fixture(scope="session")

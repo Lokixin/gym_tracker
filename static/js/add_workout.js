@@ -257,7 +257,6 @@ form.addEventListener("submit", async (e) => {
     duration: duration ? Number(duration) : 0,
     workout_entries: entries,
   };
-  console.log(payload)
 
   try {
     const res = await fetch(window.CREATE_WORKOUT_ENDPOINT, {

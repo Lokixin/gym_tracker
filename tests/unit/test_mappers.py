@@ -1,6 +1,8 @@
 from gym_tracker.adapters.mappers import map_workout_for_to_dto, workout_from_db_to_dto
 from gym_tracker.adapters.repositories import ExerciseRow, WorkoutInfoRow
 
+import pytest
+
 
 def test_map_workout_form_to_dto_groups_sets_by_series() -> None:
     result = map_workout_for_to_dto(
@@ -19,6 +21,16 @@ def test_map_workout_form_to_dto_groups_sets_by_series() -> None:
             {"weight": 70.0, "repetitions": 8, "to_failure": False},
         ]
     }
+
+
+def test_map_workout_form_to_dto_rejects_incomplete_sets() -> None:
+    with pytest.raises(ValueError, match="requires weight and repetitions"):
+        map_workout_for_to_dto({"1.weights.0": "80.5"})
+
+
+def test_map_workout_form_to_dto_rejects_invalid_keys() -> None:
+    with pytest.raises(ValueError, match="Invalid workout entry key"):
+        map_workout_for_to_dto({"invalid": "80.5"})
 
 
 def test_workout_from_db_to_dto_groups_sets_by_exercise() -> None:

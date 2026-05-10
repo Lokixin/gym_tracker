@@ -1,7 +1,10 @@
 import csv
 
+import psycopg
+
+from gym_tracker.adapters.repositories import PostgresSQLRepo
 from gym_tracker.domain.model import ExerciseMetadata, ALL_MUSCLES
-from gym_tracker.entrypoints.dependencies import get_workouts_repo, postgres_client
+from gym_tracker.entrypoints.dependencies import CONNECTION_STRING, SessionLocal
 
 
 def load_exercises_from_csv(path_to_data: str):
@@ -45,9 +48,9 @@ def parse_muscle_groups(muscle_groups: str) -> list[str]:
 
 if __name__ == "__main__":
     exercises = load_exercises_from_csv("temp_db.csv")
-    print(postgres_client.info.status)
-
-    repo = get_workouts_repo()
-    res2 = repo.add_many_exercises_metadata(exercises)
-    print(res2)
+    with psycopg.connect(CONNECTION_STRING, autocommit=True) as connection:
+        with SessionLocal() as session:
+            repo = PostgresSQLRepo(connection, session)
+            res2 = repo.add_many_exercises_metadata(exercises)
+            print(res2)
     assert True
