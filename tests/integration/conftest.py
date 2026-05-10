@@ -41,7 +41,9 @@ def psycopg_url(database_url: str) -> str:
 
 @pytest.fixture(scope="session")
 def test_engine(database_url: str) -> Generator[Engine, None, None]:
-    connect_args = {"check_same_thread": False} if database_url.startswith("sqlite") else {}
+    connect_args = (
+        {"check_same_thread": False} if database_url.startswith("sqlite") else {}
+    )
     poolclass = StaticPool if database_url.startswith("sqlite") else None
     engine = create_engine(database_url, connect_args=connect_args, poolclass=poolclass)
     try:

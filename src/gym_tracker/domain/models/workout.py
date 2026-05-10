@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import datetime
 
-from sqlalchemy import Date
+from sqlalchemy import Date, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from gym_tracker.domain.models.base import Base
@@ -8,6 +10,7 @@ from gym_tracker.domain.models.base import Base
 
 class Workout(Base):
     __tablename__ = "workouts"
+    __table_args__ = (Index("ix_workouts_date", "date"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     date: Mapped[datetime.date] = mapped_column(Date, nullable=False)

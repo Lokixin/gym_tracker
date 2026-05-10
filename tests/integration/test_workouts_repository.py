@@ -1,4 +1,5 @@
 from sqlalchemy import select
+from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
 from gym_tracker.adapters.repositories import PostgresSQLRepo
@@ -83,6 +84,32 @@ def test_get_exercises_name_uses_session(
 ) -> None:
     repo = PostgresSQLRepo(session=db_session)
 
-    assert repo.get_exercises_name("bench") == [
-        {seeded_metadata["bench_press"]: "Bench Press"}
-    ]
+    results = repo.get_exercises_name("bench")
+
+    assert len(results) == 1
+    assert results[0].id == seeded_metadata["bench_press"]
+    assert results[0].name == "Bench Press"
+
+
+def test_schema_includes_common_query_indexes(db_session: Session) -> None:
+    assert db_session.bind is not None
+    inspector = inspect(db_session.bind)
+
+    indexes = {
+        table_name: {index["name"] for index in inspector.get_indexes(table_name)}
+        for table_name in (
+            "workouts",
+            "full_exercises",
+            "metadata_secondary_muscle_group",
+            "exercise_sets",
+        )
+    }
+
+    assert "ix_workouts_date" in indexes["workouts"]
+    assert "ix_full_exercises_metadata_id" in indexes["full_exercises"]
+    assert "ix_full_exercises_workout_id" in indexes["full_exercises"]
+    assert (
+        "ix_metadata_secondary_muscle_group_muscle_group_id"
+        in indexes["metadata_secondary_muscle_group"]
+    )
+    assert "ix_exercise_sets_full_exercise_id" in indexes["exercise_sets"]

@@ -67,9 +67,28 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["full_exercise_id"], ["full_exercises.id"]),
         sa.PrimaryKeyConstraint("id"),
     )
+    op.create_index("ix_workouts_date", "workouts", ["date"])
+    op.create_index("ix_full_exercises_metadata_id", "full_exercises", ["metadata_id"])
+    op.create_index("ix_full_exercises_workout_id", "full_exercises", ["workout_id"])
+    op.create_index(
+        "ix_metadata_secondary_muscle_group_muscle_group_id",
+        "metadata_secondary_muscle_group",
+        ["muscle_group_id"],
+    )
+    op.create_index(
+        "ix_exercise_sets_full_exercise_id", "exercise_sets", ["full_exercise_id"]
+    )
 
 
 def downgrade() -> None:
+    op.drop_index("ix_exercise_sets_full_exercise_id", table_name="exercise_sets")
+    op.drop_index(
+        "ix_metadata_secondary_muscle_group_muscle_group_id",
+        table_name="metadata_secondary_muscle_group",
+    )
+    op.drop_index("ix_full_exercises_workout_id", table_name="full_exercises")
+    op.drop_index("ix_full_exercises_metadata_id", table_name="full_exercises")
+    op.drop_index("ix_workouts_date", table_name="workouts")
     op.drop_table("exercise_sets")
     op.drop_table("metadata_secondary_muscle_group")
     op.drop_table("full_exercises")
