@@ -50,7 +50,7 @@ if __name__ == "__main__":
     exercises = load_exercises_from_csv("temp_db.csv")
     with psycopg.connect(CONNECTION_STRING, autocommit=True) as connection:
         with SessionLocal() as session:
-            repo = PostgresSQLRepo(connection, session)
+            repo = PostgresSQLRepo(session=session, connection=connection)
             res2 = repo.add_many_exercises_metadata(exercises)
             print(res2)
     assert True

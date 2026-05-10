@@ -1,7 +1,7 @@
 import logging
 from collections import namedtuple
 from datetime import date, datetime, timezone
-from typing import LiteralString
+from typing import cast
 
 from psycopg import Connection
 from sqlalchemy import select
@@ -13,14 +13,13 @@ from gym_tracker.adapters.workouts_queries import (
     insert_exercise_metadata,
     insert_exercise_to_workout,
     insert_sets_to_exercise,
-    select_workout_by_date,
-    select_workout_date_and_duration,
     insert_exercise_by_id_to_workout,
 )
 from gym_tracker.domain.model import (
     ExerciseMetadata,
     Exercise,
     ExerciseSet,
+    MuscleGroup as DomainMuscleGroup,
 )
 from gym_tracker.domain.models.exercise_metadata import (
     ExerciseMetadata as ExerciseMetadataModel,
@@ -45,14 +44,52 @@ WorkoutInfoRow = namedtuple("WorkoutInfoRow", "date, duration")
 
 
 class PostgresSQLRepo:
-    def __init__(self, connection: Connection, session: Session) -> None:
+    def __init__(self, session: Session, connection: Connection | None = None) -> None:
         self.conn = connection
         self.session = session
 
+    def _require_connection(self) -> Connection:
+        if self.conn is None:
+            raise RuntimeError("A psycopg connection is required for this legacy method")
+        return self.conn
+
     def get_exercise_metadata_by_name(self, name: str) -> ExerciseMetadata:
-        with self.conn.cursor() as cursor:
+        statement = (
+            select(
+                ExerciseMetadataModel.name,
+                MuscleGroup.muscle_group,
+                ExerciseMetadataModel.id,
+            )
+            .join(
+                MuscleGroup,
+                ExerciseMetadataModel.primary_muscle_group_id == MuscleGroup.id,
+            )
+            .where(ExerciseMetadataModel.name == name)
+        )
+        metadata_tuple = self.session.execute(statement).one()
+        secondary_statement = (
+            select(MuscleGroup.muscle_group)
+            .join(
+                MetadataSecondaryMuscleGroup,
+                MetadataSecondaryMuscleGroup.muscle_group_id == MuscleGroup.id,
+            )
+            .where(MetadataSecondaryMuscleGroup.metadata_id == metadata_tuple[2])
+        )
+        secondary_muscle_groups = list(
+            self.session.execute(secondary_statement).scalars().all()
+        )
+        return ExerciseMetadata(
+            name=metadata_tuple[0],
+            primary_muscle_group=cast(DomainMuscleGroup, metadata_tuple[1]),
+            secondary_muscle_groups=cast(list[DomainMuscleGroup], secondary_muscle_groups),
+        )
+
+    def _legacy_get_exercise_metadata_by_name(self, name: str) -> ExerciseMetadata:
+        with self._require_connection().cursor() as cursor:
             cursor.execute(select_metadata_by_name, (name,))
             metadata_tuple = cursor.fetchone()
+            if metadata_tuple is None:
+                raise ValueError(f"Exercise metadata not found for {name}")
             exercise_metadata = ExerciseMetadata(
                 name=metadata_tuple[0],
                 primary_muscle_group=metadata_tuple[1],
@@ -61,7 +98,7 @@ class PostgresSQLRepo:
             return exercise_metadata
 
     def add_exercise_metadata(self, exercise_metadata: ExerciseMetadata) -> tuple[int]:
-        with self.conn.cursor() as cursor:
+        with self._require_connection().cursor() as cursor:
             primary_muscle_group = exercise_metadata.primary_muscle_group.value
             secondary_muscle_group = [
                 str(mg.value) for mg in exercise_metadata.secondary_muscle_groups
@@ -71,12 +108,14 @@ class PostgresSQLRepo:
                 [exercise_metadata.name, primary_muscle_group, secondary_muscle_group],
             )
             result = cursor.fetchone()
+            if result is None:
+                raise RuntimeError("Exercise metadata insert did not return an id")
             return result
 
     def add_many_exercises_metadata(
         self, exercises_metadata: list[ExerciseMetadata]
     ) -> int:
-        with self.conn.cursor() as cursor:
+        with self._require_connection().cursor() as cursor:
             values = [
                 (
                     exercise_metadata.name,
@@ -107,15 +146,11 @@ class PostgresSQLRepo:
                     workout_duration=workout_duration,
                 )
 
-        try:
-            return self._add_workout_records(
-                exercises=exercises,
-                workout_date=workout_date_value,
-                workout_duration=workout_duration,
-            )
-        except Exception:
-            self.session.rollback()
-            raise
+        return self._add_workout_records(
+            exercises=exercises,
+            workout_date=workout_date_value,
+            workout_duration=workout_duration,
+        )
 
     def _add_workout_records(
         self,
@@ -155,25 +190,31 @@ class PostgresSQLRepo:
 
     def add_exercise_to_workout(self, exercise: Exercise, workout_id: int) -> int:
         exercise_name = exercise.exercise_metadata.name
-        with self.conn.cursor() as cursor:
+        with self._require_connection().cursor() as cursor:
             cursor.execute(insert_exercise_to_workout, (exercise_name, workout_id))
-            inserted_id = cursor.fetchone()[0]
+            result = cursor.fetchone()
+            if result is None:
+                raise RuntimeError("Exercise insert did not return an id")
+            inserted_id = result[0]
             return inserted_id
 
     def add_exercise_by_id_to_workout(
         self, exercise_metadata_id: int, workout_id: int
     ) -> int:
-        with self.conn.cursor() as cursor:
+        with self._require_connection().cursor() as cursor:
             cursor.execute(
                 insert_exercise_by_id_to_workout, (exercise_metadata_id, workout_id)
             )
-            inserted_id = cursor.fetchone()[0]
+            result = cursor.fetchone()
+            if result is None:
+                raise RuntimeError("Exercise insert did not return an id")
+            inserted_id = result[0]
             return inserted_id
 
     def add_sets_to_exercise(
         self, exercise_sets: list[ExerciseSet], exercise_id: int
     ) -> None:
-        with self.conn.cursor() as cursor:
+        with self._require_connection().cursor() as cursor:
             cursor.executemany(
                 insert_sets_to_exercise,
                 [
@@ -199,7 +240,7 @@ class PostgresSQLRepo:
         return exercise_id
 
     def add_muscle_groups(self, muscle_groups: set[str]) -> int:
-        with self.conn.cursor() as cursor:
+        with self._require_connection().cursor() as cursor:
             cursor.executemany(
                 insert_muscle_group, [(muscle,) for muscle in muscle_groups]
             )
@@ -208,15 +249,11 @@ class PostgresSQLRepo:
     def get_workout_by_date(
         self, date: str
     ) -> tuple[list[ExerciseRow], WorkoutInfoRow] | None:
-        with self.conn.cursor() as cursor:
-            cursor.execute(select_workout_date_and_duration, (date,))
-            if workout_metadata := cursor.fetchone():
-                workout_info = WorkoutInfoRow(*workout_metadata)
-            else:
-                return None
-            cursor.execute(select_workout_by_date, (date,))
-            exercises = [ExerciseRow(*_row) for _row in cursor.fetchall()]
-            return exercises, workout_info
+        workout_statement = select(Workout.id).where(Workout.date == date)
+        workout_id = self.session.execute(workout_statement).scalar_one_or_none()
+        if workout_id is None:
+            return None
+        return self.get_workout_by_id(workout_id)
 
     def get_workout_by_id(
         self, workout_id: int
@@ -290,13 +327,15 @@ class PostgresSQLRepo:
         return exercises, workout_info
 
     def get_exercises_name(self, search_term: str) -> list[dict[int, str]]:
-        search_query: LiteralString = (
-            """SELECT id, name FROM exercises_metadata WHERE name ILIKE %s LIMIT 10;"""
+        search_pattern = f"%{search_term}%"
+        statement = (
+            select(ExerciseMetadataModel.id, ExerciseMetadataModel.name)
+            .where(ExerciseMetadataModel.name.ilike(search_pattern))
+            .order_by(ExerciseMetadataModel.name)
+            .limit(10)
         )
-        with self.conn.cursor() as cursor:
-            cursor.execute(search_query, (f"%{search_term}%",))
-            results = [{exercise[0]: exercise[1]} for exercise in cursor.fetchall()]
-            return results
+        results = self.session.execute(statement).all()
+        return [{exercise_id: exercise_name} for exercise_id, exercise_name in results]
 
     def get_existing_workouts_dates(self) -> list[dict[str, str | int]]:
         statement = select(Workout.id, Workout.date).order_by(Workout.date.desc())

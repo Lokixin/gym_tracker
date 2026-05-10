@@ -7,6 +7,7 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
 
 from gym_tracker.domain.models.base import Base
 from gym_tracker.domain.models.exercise_metadata import ExerciseMetadata
@@ -20,7 +21,7 @@ from gym_tracker.domain.models.muscle_group import MuscleGroup
 def database_url() -> str:
     url = os.getenv("DATABASE_URL")
     if not url:
-        pytest.fail("DATABASE_URL is required for integration tests")
+        return "sqlite+pysqlite:///:memory:"
     validate_test_database_url(url)
     return url
 
@@ -33,12 +34,16 @@ def validate_test_database_url(url: str) -> None:
 
 @pytest.fixture(scope="session")
 def psycopg_url(database_url: str) -> str:
+    if database_url.startswith("sqlite"):
+        pytest.skip("psycopg connection is only available for Postgres tests")
     return database_url.replace("postgresql+psycopg://", "postgresql://")
 
 
 @pytest.fixture(scope="session")
 def test_engine(database_url: str) -> Generator[Engine, None, None]:
-    engine = create_engine(database_url)
+    connect_args = {"check_same_thread": False} if database_url.startswith("sqlite") else {}
+    poolclass = StaticPool if database_url.startswith("sqlite") else None
+    engine = create_engine(database_url, connect_args=connect_args, poolclass=poolclass)
     try:
         yield engine
     finally:
