@@ -12,9 +12,8 @@ const clearBtn       = $("#clear_all");
 
 let exerciseCounter = 0;
 
-// Configure endpoints if needed
-window.EXERCISE_SUGGESTIONS_ENDPOINT = window.EXERCISE_SUGGESTIONS_ENDPOINT ?? "http://localhost:5555/search/exercises";
-window.CREATE_WORKOUT_ENDPOINT       = window.CREATE_WORKOUT_ENDPOINT ?? "http://localhost:5555/workouts";
+const exerciseSuggestionsEndpoint = window.EXERCISE_SUGGESTIONS_ENDPOINT ?? "/search/exercises";
+const createWorkoutEndpoint = window.CREATE_WORKOUT_ENDPOINT ?? "/workouts";
 
 /* ---------- Validation helpers ---------- */
 function isInDatalist(name){
@@ -56,7 +55,7 @@ exerciseInput.addEventListener("input", async (e) => {
   updateAddButtonState();
 
   // Fetch suggestions only when enough chars
-  if (!window.EXERCISE_SUGGESTIONS_ENDPOINT || q.length < 3) {
+  if (!exerciseSuggestionsEndpoint || q.length < 3) {
     if (q.length < 3) {
       datalist.innerHTML = "";
       setInputValidity(false);
@@ -68,7 +67,7 @@ exerciseInput.addEventListener("input", async (e) => {
   suggestAbort = new AbortController();
 
   try {
-    const url = new URL(window.EXERCISE_SUGGESTIONS_ENDPOINT);
+    const url = new URL(exerciseSuggestionsEndpoint, window.location.origin);
     url.searchParams.set("exercise_name", q);
     const res = await fetch(url, { signal: suggestAbort.signal, headers: { "Accept": "application/json" } });
     if (!res.ok) throw new Error(`suggestions failed: ${res.status}`);
@@ -262,7 +261,7 @@ form.addEventListener("submit", async (e) => {
   };
 
   try {
-    const res = await fetch(window.CREATE_WORKOUT_ENDPOINT, {
+    const res = await fetch(createWorkoutEndpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Accept": "application/json" },
       body: JSON.stringify(payload),

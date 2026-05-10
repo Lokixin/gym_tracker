@@ -3,7 +3,8 @@ from collections.abc import Generator
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from gym_tracker.entrypoints.dependencies import get_db_session
+from gym_tracker.adapters.repositories import RepositoryError
+from gym_tracker.entrypoints.dependencies import get_db_session, get_workouts_repo
 from gym_tracker.entrypoints.fastapi_app import app
 
 
@@ -75,6 +76,37 @@ def test_get_missing_workout_returns_404(db_session: Session) -> None:
         assert response.json() == {
             "detail": {"message": "Workout Not Found for id 999"}
         }
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_create_workout_returns_safe_error_when_repository_fails() -> None:
+    class FailingRepo:
+        def add_workout(self, *args: object, **kwargs: object) -> int:
+            raise RepositoryError("boom")
+
+    app.dependency_overrides[get_workouts_repo] = lambda: FailingRepo()
+    try:
+        client = TestClient(app, raise_server_exceptions=False)
+
+        response = client.post(
+            "/workouts",
+            json={
+                "date": "2024-06-16",
+                "duration": 90,
+                "exercises": [
+                    {
+                        "metadata_id": 1,
+                        "sets": [
+                            {"weight": 80, "repetitions": 10, "to_failure": False}
+                        ],
+                    }
+                ],
+            },
+        )
+
+        assert response.status_code == 500
+        assert response.json() == {"detail": {"message": "Unable to create workout"}}
     finally:
         app.dependency_overrides.clear()
 
