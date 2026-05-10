@@ -1,4 +1,5 @@
 import csv
+import logging
 
 import psycopg
 
@@ -6,8 +7,10 @@ from gym_tracker.adapters.repositories import PostgresSQLRepo
 from gym_tracker.domain.model import ExerciseMetadata, ALL_MUSCLES
 from gym_tracker.entrypoints.dependencies import CONNECTION_STRING, SessionLocal
 
+logger = logging.getLogger(__name__)
 
-def load_exercises_from_csv(path_to_data: str):
+
+def load_exercises_from_csv(path_to_data: str) -> list[ExerciseMetadata]:
     all_exercises = []
     with open(path_to_data, "r", encoding="utf-8", newline="") as fp:
         reader = csv.reader(fp)
@@ -48,9 +51,20 @@ def parse_muscle_groups(muscle_groups: str) -> list[str]:
 
 if __name__ == "__main__":
     exercises = load_exercises_from_csv("temp_db.csv")
+    muscle_groups = set()
+    for exercise in exercises:
+        muscle_groups.add((exercise.primary_muscle_group,))
+        for muscle_group in exercise.secondary_muscle_groups:
+            muscle_groups.add((muscle_group,))
+    logger.info("Found %s different muscle groups", len(muscle_groups))
     with psycopg.connect(CONNECTION_STRING, autocommit=True) as connection:
         with SessionLocal() as session:
+            with connection.cursor() as cursor:
+                muscle_group_statement = (
+                    "INSERT into muscle_groups (muscle_group) VALUES (%s)"
+                )
+                cursor.executemany(muscle_group_statement, muscle_groups)
+                session.commit()
             repo = PostgresSQLRepo(session=session, connection=connection)
-            res2 = repo.add_many_exercises_metadata(exercises)
-            print(res2)
-    assert True
+            insert_count = repo.add_many_exercises_metadata(exercises)
+            logger.info("Inserted %s records", insert_count)

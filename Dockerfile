@@ -1,4 +1,4 @@
-FROM python:3.11.10-alpine3.20
+FROM python:3.11.15-slim
 
 RUN pip install poetry
 
