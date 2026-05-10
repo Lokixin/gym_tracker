@@ -33,7 +33,6 @@ from gym_tracker.domain.models.muscle_group import MuscleGroup
 from gym_tracker.domain.models.workout import Workout
 
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 ExerciseRow = namedtuple(
@@ -42,6 +41,10 @@ ExerciseRow = namedtuple(
 )
 WorkoutInfoRow = namedtuple("WorkoutInfoRow", "date, duration")
 SearchExerciseRow = namedtuple("SearchExerciseRow", "id, name")
+
+
+class RepositoryError(Exception):
+    pass
 
 
 class PostgresSQLRepo:
@@ -143,19 +146,25 @@ class PostgresSQLRepo:
         else:
             workout_date_value = date.fromisoformat(workout_date[:10])
         owns_transaction = not self.session.in_transaction()
-        if owns_transaction:
-            with self.session.begin():
-                return self._add_workout_records(
-                    exercises=exercises,
-                    workout_date=workout_date_value,
-                    workout_duration=workout_duration,
-                )
+        try:
+            if owns_transaction:
+                with self.session.begin():
+                    return self._add_workout_records(
+                        exercises=exercises,
+                        workout_date=workout_date_value,
+                        workout_duration=workout_duration,
+                    )
 
-        return self._add_workout_records(
-            exercises=exercises,
-            workout_date=workout_date_value,
-            workout_duration=workout_duration,
-        )
+            return self._add_workout_records(
+                exercises=exercises,
+                workout_date=workout_date_value,
+                workout_duration=workout_duration,
+            )
+        except Exception as exc:
+            logger.exception(
+                "Failed to add workout", extra={"workout_date": workout_date}
+            )
+            raise RepositoryError("Failed to add workout") from exc
 
     def _add_workout_records(
         self,

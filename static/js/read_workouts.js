@@ -1,4 +1,4 @@
-const workoutsByIdEndpoint = window.WORKOUTS_BY_ID_ENDPOINT ?? "/workouts/";
+const workoutsByIdEndpoint = (window.WORKOUTS_BY_ID_ENDPOINT ?? "/workouts").replace(/\/$/, "");
 
 const dateSelector = document.getElementById("workouts_dates");
 const selectedDate = document.getElementById("selected_date");

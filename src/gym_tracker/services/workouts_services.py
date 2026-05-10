@@ -1,5 +1,4 @@
-from fastapi import HTTPException
-from starlette import status
+from dataclasses import dataclass
 
 from gym_tracker.adapters.mappers import (
     workout_from_db_to_dto,
@@ -12,15 +11,17 @@ from gym_tracker.entrypoints.dtos import (
 )
 
 
+@dataclass(frozen=True)
+class WorkoutNotFoundError(Exception):
+    lookup: str
+
+
 def get_workout_by_date_service(
     date: str, workouts_repo: PostgresSQLRepo
 ) -> WorkoutDTO:
     if workout := workouts_repo.get_workout_by_date(date):
         return workout_from_db_to_dto(exercises=workout[0], workout_metadata=workout[1])
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail={"message": f"Workout Not Found for date {date}"},
-    )
+    raise WorkoutNotFoundError(f"date {date}")
 
 
 def get_workout_by_id_service(
@@ -28,10 +29,7 @@ def get_workout_by_id_service(
 ) -> WorkoutDTO:
     if workout := workouts_repo.get_workout_by_id(workout_id):
         return workout_from_db_to_dto(exercises=workout[0], workout_metadata=workout[1])
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail={"message": f"Workout Not Found for id {workout_id}"},
-    )
+    raise WorkoutNotFoundError(f"id {workout_id}")
 
 
 def create_new_workout_service(
