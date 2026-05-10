@@ -40,7 +40,7 @@ def test_add_exercise_to_workout() -> None:
     exercise = Exercise(
         exercise_metadata=exercise_metadata, exercise_sets=[exercise_set]
     )
-    workout = Workout(exercises=[])
+    workout = Workout(exercises=[], duration=90)
 
     workout.add_exercise(exercise)
 
@@ -50,12 +50,12 @@ def test_add_exercise_to_workout() -> None:
 
 def test_workout_sets_given_date() -> None:
     date = "2024-05-23T21:24:11.765570+02:00"
-    workout = Workout(exercises=[], date=date)
+    workout = Workout(exercises=[], date=date, duration=90)
 
     assert workout.date == date
 
 
 def test_workout_sets_date_automatically(mock_pendulum_now) -> None:
-    workout = Workout(exercises=[], date=None)
+    workout = Workout(exercises=[], date=None, duration=90)
 
     assert workout.date == mock_pendulum_now.to_rfc3339_string()
