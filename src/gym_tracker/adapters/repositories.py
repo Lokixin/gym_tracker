@@ -1,11 +1,10 @@
 import logging
 from collections import namedtuple
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import LiteralString
 
 from psycopg import Connection
-from psycopg.sql import SQL
-from sqlalchemy import select, insert
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from gym_tracker.adapters.admin_queries import insert_muscle_group
@@ -17,7 +16,6 @@ from gym_tracker.adapters.workouts_queries import (
     select_workout_by_date,
     select_workout_date_and_duration,
     insert_exercise_by_id_to_workout,
-    insert_workout_cte,
 )
 from gym_tracker.domain.model import (
     ExerciseMetadata,
@@ -92,81 +90,44 @@ class PostgresSQLRepo:
 
     def add_workout(
         self,
-        exercises: dict[str, list[dict[str, int | float]]],
+        exercises: dict[str, list[dict[str, int | float | bool]]],
         workout_date: str | None = None,
         workout_duration: int | None = 0,
     ) -> int:
         if not workout_date:
-            workout_date = datetime.now(timezone.utc).isoformat()
+            workout_date_value = datetime.now(timezone.utc).date()
+        else:
+            workout_date_value = date.fromisoformat(workout_date[:10])
         with self.session.begin():
-            try:
-                insert_workout_statement = insert(Workout).values(
-                    date=workout_date,
-                    duration=workout_duration,
+            workout = Workout(
+                date=workout_date_value,
+                duration=workout_duration or 0,
+            )
+            self.session.add(workout)
+            self.session.flush()
+
+            for metadata_id, exercise_sets in exercises.items():
+                full_exercise = FullExercise(
+                    metadata_id=int(metadata_id),
+                    workout_id=workout.id,
                 )
-                res = self.session.execute(insert_workout_statement)
-                workout_id = res.inserted_primary_key[0]
+                self.session.add(full_exercise)
+                self.session.flush()
 
-                full_exercises_dict = [
-                    {
-                        "metadata_id": int(metadata_id),
-                        "workout_id": workout_id,
-                    }
-                    for metadata_id in exercises.keys()
-                ]
-                insert_exercises_statement = insert(FullExercise).values(
-                    full_exercises_dict
-                )
-                logger.info(insert_exercises_statement)
-                result = self.session.execute(insert_exercises_statement)
-                logger.info("Insert exercises result: %s", result.inserted_primary_key)
-                self.session.commit()
-                return
-            except Exception as e:
-                logger.error(e)
-                self.session.rollback()
-                return
-
-
-        with self.conn.transaction():
-            with self.conn.cursor() as cursor:
-                query = insert_workout_cte.format(
-                    date=workout_date,
-                    duration=workout_duration,
-                    metadata_ids=[int(metadata_id) for metadata_id in exercises.keys()],
-                )
-
-                cursor.execute(query)
-                inserted_exercises_id = [_id[0] for _id in cursor.fetchall()]
-                exercise_sets_query_params = []
-
-                for exercise_id, exercise_sets in zip(
-                    inserted_exercises_id, exercises.values()
-                ):
-                    for _set in exercise_sets:
-                        exercise_sets_query_params.append(
-                            (
-                                _set["weights"],
-                                _set["reps"],
-                                getattr(_set, "to_failure", False),
-                                exercise_id,
+                if exercise_sets:
+                    self.session.add_all(
+                        [
+                            ExerciseSetModel(
+                                weight=float(exercise_set["weight"]),
+                                repetitions=int(exercise_set["repetitions"]),
+                                to_failure=bool(exercise_set.get("to_failure", False)),
+                                full_exercise_id=full_exercise.id,
                             )
-                        )
-                prepared_ex_values_sql = SQL(",").join(
-                    SQL("({weight}, {reps}, {to_failure}, {exercise_id})").format(
-                        weight=str(ex[0]),
-                        reps=str(ex[1]),
-                        to_failure=ex[2],
-                        exercise_id=str(ex[3]),
+                            for exercise_set in exercise_sets
+                        ]
                     )
-                    for ex in exercise_sets_query_params
-                )
-                query = SQL("""
-                    INSERT INTO exercise_sets (weight, repetitions, to_failure, full_exercise_id) 
-                    VALUES {values};
-                """).format(values=prepared_ex_values_sql)
-                cursor.execute(query)
-                return
+
+            return workout.id
 
     def add_exercise_to_workout(self, exercise: Exercise, workout_id: int) -> int:
         exercise_name = exercise.exercise_metadata.name
