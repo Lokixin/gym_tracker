@@ -34,6 +34,11 @@ class ExerciseDTO(BaseModel):
     exercise_sets: list[ExerciseSetDTO]
 
 
+class CreateWorkoutExerciseDTO(BaseModel):
+    metadata_id: Annotated[int, Field(..., examples=[1])]
+    sets: list[ExerciseSetDTO]
+
+
 class WorkoutDTO(BaseModel):
     date: Annotated[str, Field(..., examples=["2024-06-16"])]
     duration: Annotated[int, Field(..., examples=[120])]
@@ -48,4 +53,9 @@ class CreateWorkoutBody(BaseModel):
 class CreateWorkoutFromClient(BaseModel):
     date: Annotated[str, Field(..., examples=["2024-06-16"])] | None = None
     duration: Annotated[int, Field(..., examples=[90])] | None = 0
-    workout_entries: dict[str, float | int | str]
+    exercises: list[CreateWorkoutExerciseDTO]
+
+
+class SearchExerciseResultDTO(BaseModel):
+    id: int
+    name: str

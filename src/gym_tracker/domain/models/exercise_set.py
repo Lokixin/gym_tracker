@@ -1,4 +1,6 @@
-from sqlalchemy import ForeignKey
+from __future__ import annotations
+
+from sqlalchemy import ForeignKey, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from gym_tracker.domain.models.base import Base
@@ -6,6 +8,7 @@ from gym_tracker.domain.models.base import Base
 
 class ExerciseSet(Base):
     __tablename__ = "exercise_sets"
+    __table_args__ = (Index("ix_exercise_sets_full_exercise_id", "full_exercise_id"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     weight: Mapped[float] = mapped_column(nullable=False)

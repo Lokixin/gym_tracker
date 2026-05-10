@@ -1,18 +1,32 @@
-from gym_tracker.adapters.mappers import map_workout_for_to_dto, workout_from_db_to_dto
+from gym_tracker.adapters.mappers import (
+    create_workout_body_to_repo_payload,
+    workout_from_db_to_dto,
+)
 from gym_tracker.adapters.repositories import ExerciseRow, WorkoutInfoRow
-
+from gym_tracker.entrypoints.dtos import (
+    CreateWorkoutExerciseDTO,
+    CreateWorkoutFromClient,
+    ExerciseSetDTO,
+)
 import pytest
+from pydantic import ValidationError
 
 
-def test_map_workout_form_to_dto_groups_sets_by_series() -> None:
-    result = map_workout_for_to_dto(
-        {
-            "1.weights.0": "80.5",
-            "1.reps.0": "10",
-            "1.to_failure.0": "on",
-            "1.weights.1": "70",
-            "1.reps.1": "8",
-        }
+def test_create_workout_body_to_repo_payload_groups_sets_by_metadata_id() -> None:
+    result = create_workout_body_to_repo_payload(
+        CreateWorkoutFromClient(
+            date="2024-06-16",
+            duration=90,
+            exercises=[
+                CreateWorkoutExerciseDTO(
+                    metadata_id=1,
+                    sets=[
+                        ExerciseSetDTO(weight=80.5, repetitions=10, to_failure=True),
+                        ExerciseSetDTO(weight=70, repetitions=8),
+                    ],
+                )
+            ],
+        )
     )
 
     assert result == {
@@ -23,14 +37,15 @@ def test_map_workout_form_to_dto_groups_sets_by_series() -> None:
     }
 
 
-def test_map_workout_form_to_dto_rejects_incomplete_sets() -> None:
-    with pytest.raises(ValueError, match="requires weight and repetitions"):
-        map_workout_for_to_dto({"1.weights.0": "80.5"})
-
-
-def test_map_workout_form_to_dto_rejects_invalid_keys() -> None:
-    with pytest.raises(ValueError, match="Invalid workout entry key"):
-        map_workout_for_to_dto({"invalid": "80.5"})
+def test_create_workout_body_rejects_missing_set_fields() -> None:
+    with pytest.raises(ValidationError):
+        CreateWorkoutFromClient.model_validate(
+            {
+                "date": "2024-06-16",
+                "duration": 90,
+                "exercises": [{"metadata_id": 1, "sets": [{"weight": 80}]}],
+            }
+        )
 
 
 def test_workout_from_db_to_dto_groups_sets_by_exercise() -> None:

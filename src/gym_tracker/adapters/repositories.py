@@ -41,6 +41,7 @@ ExerciseRow = namedtuple(
     "weight, reps, to_failure, name, primary_muscle_group, secondary_muscle_groups",
 )
 WorkoutInfoRow = namedtuple("WorkoutInfoRow", "date, duration")
+SearchExerciseRow = namedtuple("SearchExerciseRow", "id, name")
 
 
 class PostgresSQLRepo:
@@ -50,7 +51,9 @@ class PostgresSQLRepo:
 
     def _require_connection(self) -> Connection:
         if self.conn is None:
-            raise RuntimeError("A psycopg connection is required for this legacy method")
+            raise RuntimeError(
+                "A psycopg connection is required for this legacy method"
+            )
         return self.conn
 
     def get_exercise_metadata_by_name(self, name: str) -> ExerciseMetadata:
@@ -81,7 +84,9 @@ class PostgresSQLRepo:
         return ExerciseMetadata(
             name=metadata_tuple[0],
             primary_muscle_group=cast(DomainMuscleGroup, metadata_tuple[1]),
-            secondary_muscle_groups=cast(list[DomainMuscleGroup], secondary_muscle_groups),
+            secondary_muscle_groups=cast(
+                list[DomainMuscleGroup], secondary_muscle_groups
+            ),
         )
 
     def _legacy_get_exercise_metadata_by_name(self, name: str) -> ExerciseMetadata:
@@ -326,7 +331,7 @@ class PostgresSQLRepo:
         ]
         return exercises, workout_info
 
-    def get_exercises_name(self, search_term: str) -> list[dict[int, str]]:
+    def get_exercises_name(self, search_term: str) -> list[SearchExerciseRow]:
         search_pattern = f"%{search_term}%"
         statement = (
             select(ExerciseMetadataModel.id, ExerciseMetadataModel.name)
@@ -335,7 +340,10 @@ class PostgresSQLRepo:
             .limit(10)
         )
         results = self.session.execute(statement).all()
-        return [{exercise_id: exercise_name} for exercise_id, exercise_name in results]
+        return [
+            SearchExerciseRow(id=exercise_id, name=exercise_name)
+            for exercise_id, exercise_name in results
+        ]
 
     def get_existing_workouts_dates(self) -> list[dict[str, str | int]]:
         statement = select(Workout.id, Workout.date).order_by(Workout.date.desc())

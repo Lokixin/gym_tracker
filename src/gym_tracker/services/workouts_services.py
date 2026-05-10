@@ -1,21 +1,19 @@
-
-from fastapi import Depends, HTTPException
+from fastapi import HTTPException
 from starlette import status
-from starlette.responses import JSONResponse
 
-from gym_tracker.adapters.mappers import workout_from_db_to_dto, map_workout_for_to_dto
+from gym_tracker.adapters.mappers import (
+    workout_from_db_to_dto,
+    create_workout_body_to_repo_payload,
+)
 from gym_tracker.adapters.repositories import PostgresSQLRepo
-from gym_tracker.entrypoints.dependencies import get_workouts_repo
 from gym_tracker.entrypoints.dtos import (
-    WorkoutDTO,
-    ExerciseSetDTO,
-    ExerciseDTO,
     CreateWorkoutFromClient,
+    WorkoutDTO,
 )
 
 
 def get_workout_by_date_service(
-    date: str, workouts_repo: PostgresSQLRepo = Depends(get_workouts_repo)
+    date: str, workouts_repo: PostgresSQLRepo
 ) -> WorkoutDTO:
     if workout := workouts_repo.get_workout_by_date(date):
         return workout_from_db_to_dto(exercises=workout[0], workout_metadata=workout[1])
@@ -26,7 +24,7 @@ def get_workout_by_date_service(
 
 
 def get_workout_by_id_service(
-    workout_id: int, workouts_repo: PostgresSQLRepo = Depends(get_workouts_repo)
+    workout_id: int, workouts_repo: PostgresSQLRepo
 ) -> WorkoutDTO:
     if workout := workouts_repo.get_workout_by_id(workout_id):
         return workout_from_db_to_dto(exercises=workout[0], workout_metadata=workout[1])
@@ -38,42 +36,11 @@ def get_workout_by_id_service(
 
 def create_new_workout_service(
     workout_body: CreateWorkoutFromClient,
-    workouts_repo: PostgresSQLRepo = Depends(get_workouts_repo),
-) -> JSONResponse:
-    mapped_sets = map_workout_for_to_dto(workout_body.workout_entries)
-    workout_id = workouts_repo.add_workout(
-        mapped_sets,
+    workouts_repo: PostgresSQLRepo,
+) -> int:
+    exercises = create_workout_body_to_repo_payload(workout_body)
+    return workouts_repo.add_workout(
+        exercises,
         workout_date=workout_body.date,
         workout_duration=workout_body.duration,
-    )
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content={"id": workout_id})
-
-
-def add_exercise_to_workout_service(
-    workout_id: int,
-    exercise: ExerciseDTO,
-    workouts_repo: PostgresSQLRepo = Depends(get_workouts_repo),
-) -> JSONResponse:
-    if not exercise.exercise_sets:
-        exercise_id = workouts_repo.add_exercise_to_workout(exercise, workout_id)
-    else:
-        exercise_id = workouts_repo.add_exercise_with_sets_to_workout(
-            exercise, workout_id
-        )
-    return JSONResponse(status_code=status.HTTP_200_OK, content={"id": exercise_id})
-
-
-def add_set_to_exercise_service(
-    exercise_id: int,
-    exercise_sets: list[ExerciseSetDTO],
-    workouts_repo: PostgresSQLRepo = Depends(get_workouts_repo),
-) -> JSONResponse:
-    workouts_repo.add_sets_to_exercise(
-        exercise_sets=exercise_sets, exercise_id=exercise_id
-    )
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content={
-            "message": f"{len(exercise_sets)} sets added to exercise {exercise_id}"
-        },
     )

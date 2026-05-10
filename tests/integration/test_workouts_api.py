@@ -22,13 +22,15 @@ def test_create_workout_returns_inserted_id_and_persists_payload(
             json={
                 "date": "2024-06-16",
                 "duration": 90,
-                "workout_entries": {
-                    f"{seeded_metadata['bench_press']}.weights.0": "80",
-                    f"{seeded_metadata['bench_press']}.reps.0": "10",
-                    f"{seeded_metadata['bench_press']}.to_failure.0": "on",
-                    f"{seeded_metadata['bench_press']}.weights.1": "75",
-                    f"{seeded_metadata['bench_press']}.reps.1": "8",
-                },
+                "exercises": [
+                    {
+                        "metadata_id": seeded_metadata["bench_press"],
+                        "sets": [
+                            {"weight": 80, "repetitions": 10, "to_failure": True},
+                            {"weight": 75, "repetitions": 8},
+                        ],
+                    }
+                ],
             },
         )
 
@@ -70,7 +72,9 @@ def test_get_missing_workout_returns_404(db_session: Session) -> None:
         response = client.get("/workouts/999")
 
         assert response.status_code == 404
-        assert response.json() == {"detail": {"message": "Workout Not Found for id 999"}}
+        assert response.json() == {
+            "detail": {"message": "Workout Not Found for id 999"}
+        }
     finally:
         app.dependency_overrides.clear()
 
@@ -89,6 +93,8 @@ def test_search_exercises_uses_dependency_overridden_session(
         response = client.get("/search/exercises", params={"exercise_name": "press"})
 
         assert response.status_code == 200
-        assert response.json() == [{str(seeded_metadata["bench_press"]): "Bench Press"}]
+        assert response.json() == [
+            {"id": seeded_metadata["bench_press"], "name": "Bench Press"}
+        ]
     finally:
         app.dependency_overrides.clear()

@@ -31,6 +31,14 @@ httpx = "^0.28.1"
 [tool.ruff.lint.per-file-ignores]
 "src/gym_tracker/domain/models/*" = ["F821"]
 
+[tool.mypy]
+exclude = [
+    "src/gym_tracker/adapters/admin_queries.py",
+    "src/gym_tracker/exercise_ingestor/.*",
+]
+ignore_missing_imports = true
+disable_error_code = ["name-defined"]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
