@@ -8,9 +8,11 @@ from typing import Generator
 import requests
 from bs4 import BeautifulSoup
 
+from gym_tracker.config import settings
+
 BASE_URL = "https://www.strengthlog.com/exercise-directory/"
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"
-COOKIE = "mo_is_new=true; mo_has_visited=true; _gid=GA1.2.339830836.1729420920; _gauges_unique_hour=1; _gauges_unique_day=1; _gauges_unique_month=1; _gauges_unique_year=1; _gauges_unique=1; am_gpp_cmp_version=v2test; _pubCommonId=6ad72b13-e111-4825-aa56-29ce717826a0; _lr_retry_request=true; _lr_env_src_ats=false; euconsent-v2=CQGytAAQGytAAAuACAENBLFsAP_gAEPgACQgJvMR9G9GRSFj8H53IMskII0PwVhAakAhBgCAE-ABCJOEPIwUhCAwAA3CIiACGRIAODYAAAEAGAAQQEAAYIABIADMAEAQIABKIABAAAIBIEAQAAwAgAAgEAAAgGAEAAQBiAQNAZIARMyAggEGEVAQKAAAAAAAAgAAAAAAQAAAQAAIACgAAAAAAAAAAAAAQBAIAAAAAAAAAAAAAAAAABBN4AEg0IiAAsiAkIJAgggAAiCAIACAAAAAAQEEAAAQIAhYGAAoQEQAAAQAAAACAAAAQAAAAAAAEAAAgACBAABAAFAAAABAABAAAIAAAAJAACAAEAEAAEAAAAAAAAgACAMAAIAAIACAgQAAIEAAIAARAAAAAAAAAAAAAAAAAACAABAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAIAAA.f_wACHwAAAAA; mv_cmp_version=v2; am_gpp=DBACPeA~CQGytAAQGytAAAuACAENBLFsAP_gAEPgACQgJvMR9G9GRSFj8H53IMskII0PwVhAakAhBgCAE-ABCJOEPIwUhCAwAA3CIiACGRIAODYAAAEAGAAQQEAAYIABIADMAEAQIABKIABAAAIBIEAQAAwAgAAgEAAAgGAEAAQBiAQNAZIARMyAggEGEVAQKAAAAAAAAgAAAAAAQAAAQAAIACgAAAAAAAAAAAAAQBAIAAAAAAAAAAAAAAAAABBN4AEg0IiAAsiAkIJAgggAAiCAIACAAAAAAQEEAAAQIAhYGAAoQEQAAAQAAAACAAAAQAAAAAAAEAAAgACBAABAAFAAAABAABAAAIAAAAJAACAAEAEAAEAAAAAAAAgACAMAAIAAIACAgQAAIEAAIAARAAAAAAAAAAAAAAAAAACAABAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAIAAA.f_wACHwAAAAA~1---~BqgAAAAAAgA; _pubCommonId_cst=FSwRLPAsOg%3D%3D; _scor_uid=e1b34a547c8d42b2a233721e00cd9df3; cto_bundle=29jUol9VSzhSS0NjRUY2VXNEMG1oZWEyd3Rkdlh0Y1BzTE9uaTJBSno1dXBLSVNMcWd4UE0lMkZBYXNOcE1Sa3JVRGk2bUR6Smw4STdPeTBNMXJJS25KSSUyQmh3aElVemlaSG4lMkJNckE5bE55M2ZmMjhUdGFDJTJGamVGN2x4NEI2UjVadmNqd1hRak5zMVoyTGQ3TCUyRiUyRmZiT1ZDRUV1aVRSUE42VEdCZ1RXdlVMUnByMldmJTJGayUzRA; mo_IMUuixWsfa=true; mo_global_cookie=true; mo_page_views_counter=2; _ga_Y0SVM9QZQD=GS1.1.1729420919.1.1.1729421340.60.0.0; _ga=GA1.1.1753488084.1729420920"
+COOKIE = settings.strengthlog_cookie
 ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
 SELECTOR = "wp-block-list"
 logging.basicConfig(level=logging.INFO)
@@ -54,8 +56,9 @@ if __name__ == "__main__":
         headers = {
             "User-Agent": USER_AGENT,
             "Accept": ACCEPT,
-            "Cookie": COOKIE,
         }
+        if COOKIE:
+            headers["Cookie"] = COOKIE
         res = client.get(BASE_URL, headers=headers)
         if res.status_code != 200:
             logger.error("Error scraping: ", res.status_code, res.content)
