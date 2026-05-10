@@ -4,7 +4,7 @@ from starlette import status
 from starlette.responses import JSONResponse
 
 from gym_tracker.adapters.mappers import workout_from_db_to_dto, map_workout_for_to_dto
-from gym_tracker.adapters.repositories import PostgresSQLRepo, logger
+from gym_tracker.adapters.repositories import PostgresSQLRepo
 from gym_tracker.entrypoints.dependencies import get_workouts_repo
 from gym_tracker.entrypoints.dtos import (
     WorkoutDTO,
@@ -41,8 +41,12 @@ def create_new_workout_service(
     workouts_repo: PostgresSQLRepo = Depends(get_workouts_repo),
 ) -> JSONResponse:
     mapped_sets = map_workout_for_to_dto(workout_body.workout_entries)
-    workouts_repo.add_workout(mapped_sets)
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content={"id": 1})
+    workout_id = workouts_repo.add_workout(
+        mapped_sets,
+        workout_date=workout_body.date,
+        workout_duration=workout_body.duration,
+    )
+    return JSONResponse(status_code=status.HTTP_201_CREATED, content={"id": workout_id})
 
 
 def add_exercise_to_workout_service(

@@ -14,7 +14,7 @@ let exerciseCounter = 0;
 
 // Configure endpoints if needed
 window.EXERCISE_SUGGESTIONS_ENDPOINT = window.EXERCISE_SUGGESTIONS_ENDPOINT ?? "http://localhost:5555/search/exercises";
-window.CREATE_WORKOUT_ENDPOINT       = window.CREATE_WORKOUT_ENDPOINT ?? "http://localhost:5555/workouts/by_date";
+window.CREATE_WORKOUT_ENDPOINT       = window.CREATE_WORKOUT_ENDPOINT ?? "http://localhost:5555/workouts";
 
 /* ---------- Validation helpers ---------- */
 function isInDatalist(name){
@@ -247,7 +247,16 @@ form.addEventListener("submit", async (e) => {
   }
 
   const fd = new FormData(form);
-  const payload = { workout_entries: Object.fromEntries(fd.entries()) };
+  const entries = Object.fromEntries(fd.entries());
+  const startedAt = entries.started_at;
+  const duration = entries.duration;
+  delete entries.started_at;
+  delete entries.duration;
+  const payload = {
+    date: startedAt ? String(startedAt).slice(0, 10) : null,
+    duration: duration ? Number(duration) : 0,
+    workout_entries: entries,
+  };
   console.log(payload)
 
   try {

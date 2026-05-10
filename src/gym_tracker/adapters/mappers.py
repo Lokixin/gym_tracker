@@ -78,19 +78,25 @@ def workout_from_db_to_dto(
     return workout_dto
 
 
-def map_workout_for_to_dto(workout_entries: dict[str, int | float]) -> dict:
-    output = {}
+def map_workout_for_to_dto(workout_entries: dict[str, float | int | str]) -> dict:
+    output: dict[str, list[dict[str, float | int | bool]]] = {}
     for key, value in workout_entries.items():
         exercise_name, attr, series = key.split(".")
-        if attr == "reps":
-            value = int(value)
-        if attr == "to_failure":
-            value = True if value == "on" else False
-        if exercise_name not in output:
-            output[exercise_name] = [{attr: value}]
+        set_index = int(series)
+        parsed_value: float | int | bool
+        if attr == "weights":
+            attr = "weight"
+            parsed_value = float(value)
+        elif attr == "reps":
+            attr = "repetitions"
+            parsed_value = int(value)
+        elif attr == "to_failure":
+            parsed_value = True if value == "on" else False
         else:
-            if attr not in output[exercise_name][len(output[exercise_name]) - 1]:
-                output[exercise_name][len(output[exercise_name]) - 1][attr] = value
-            else:
-                output[exercise_name].append({attr: value})
+            continue
+        if exercise_name not in output:
+            output[exercise_name] = []
+        while len(output[exercise_name]) <= set_index:
+            output[exercise_name].append({"to_failure": False})
+        output[exercise_name][set_index][attr] = parsed_value
     return output

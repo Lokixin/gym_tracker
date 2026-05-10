@@ -46,4 +46,6 @@ class CreateWorkoutBody(BaseModel):
 
 
 class CreateWorkoutFromClient(BaseModel):
+    date: Annotated[str, Field(..., examples=["2024-06-16"])] | None = None
+    duration: Annotated[int, Field(..., examples=[90])] | None = 0
     workout_entries: dict[str, float | int | str]
