@@ -1,6 +1,6 @@
-
 from fastapi import Depends, Query
 from fastapi.routing import APIRouter
+from starlette import status
 from starlette.responses import JSONResponse
 
 from gym_tracker.adapters.repositories import PostgresSQLRepo
@@ -33,6 +33,7 @@ def create_new_workout(
     workout_body: CreateWorkoutFromClient,
     workouts_repo: PostgresSQLRepo = Depends(get_workouts_repo),
 ) -> JSONResponse:
-    return create_new_workout_service(
+    workout_id = create_new_workout_service(
         workout_body=workout_body, workouts_repo=workouts_repo
     )
+    return JSONResponse(status_code=status.HTTP_201_CREATED, content={"id": workout_id})

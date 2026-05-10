@@ -72,13 +72,12 @@ exerciseInput.addEventListener("input", async (e) => {
     url.searchParams.set("exercise_name", q);
     const res = await fetch(url, { signal: suggestAbort.signal, headers: { "Accept": "application/json" } });
     if (!res.ok) throw new Error(`suggestions failed: ${res.status}`);
-    const items = await res.json(); // [{id:name}, ...]
+    const items = await res.json(); // [{id, name}, ...]
     datalist.innerHTML = "";
-    (items || []).slice(0, 20).forEach(obj => {
-      const [id, name] = Object.entries(obj)[0];
+    (items || []).slice(0, 20).forEach(item => {
       const opt = document.createElement("option");
-      opt.id = id;
-      opt.value = name;
+      opt.id = item.id;
+      opt.value = item.name;
       datalist.appendChild(opt);
     });
   } catch (err) {
@@ -188,7 +187,7 @@ function addSetRow(card) {
   const row = el("div", "set");
 
   const repsName   = `${metadataId}.reps.${index}`;
-  const weightName = `${metadataId}.weights.${index}`;
+  const weightName = `${metadataId}.weight.${index}`;
   const failName   = `${metadataId}.to_failure.${index}`;
 
   row.innerHTML = `
@@ -223,11 +222,11 @@ function updateSetCount(card) {
 function reindexSetNames(card, metadataId) {
   $$(".sets .set", card).forEach((row, i) => {
     const reps  = row.querySelector('input[name*=".reps."]');
-    const w     = row.querySelector('input[name*=".weights."]');
+    const w     = row.querySelector('input[name*=".weight."]');
     const fail  = row.querySelector('input[name*=".to_failure."]');
 
     const repsName   = `${metadataId}.reps.${i}`;
-    const weightName = `${metadataId}.weights.${i}`;
+    const weightName = `${metadataId}.weight.${i}`;
     const failName   = `${metadataId}.to_failure.${i}`;
 
     reps.name  = repsName;   reps.id  = slug(repsName);
@@ -247,15 +246,19 @@ form.addEventListener("submit", async (e) => {
   }
 
   const fd = new FormData(form);
-  const entries = Object.fromEntries(fd.entries());
-  const startedAt = entries.started_at;
-  const duration = entries.duration;
-  delete entries.started_at;
-  delete entries.duration;
+  const startedAt = fd.get("started_at");
+  const duration = fd.get("duration");
   const payload = {
     date: startedAt ? String(startedAt).slice(0, 10) : null,
     duration: duration ? Number(duration) : 0,
-    workout_entries: entries,
+    exercises: $$(".card", builder).map(card => ({
+      metadata_id: Number(card.dataset.metadataId),
+      sets: $$(".sets .set", card).map(row => ({
+        weight: Number(row.querySelector('input[name*=".weight."]').value),
+        repetitions: Number(row.querySelector('input[name*=".reps."]').value),
+        to_failure: row.querySelector('input[name*=".to_failure."]').checked,
+      })),
+    })),
   };
 
   try {
