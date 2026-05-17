@@ -1,8 +1,6 @@
-from __future__ import annotations
-
 import datetime
 
-from sqlalchemy import Date, Index
+from sqlalchemy import Date, Index, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from gym_tracker.domain.models.base import Base
@@ -19,3 +17,5 @@ class Workout(Base):
     full_exercises: Mapped[list["FullExercise"]] = relationship(
         back_populates="workout"
     )
+    user: Mapped["User"] = relationship(back_populates="workouts")
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)

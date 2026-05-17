@@ -26,7 +26,7 @@ down:
 	docker-compose down
 
 db-upgrade:
-	poetry run alembic upgrade head
+	DATABASE_URL="postgresql+psycopg://admin:admin@localhost/postgres" poetry run alembic upgrade head
 
 db-downgrade:
 	poetry run alembic downgrade -1
@@ -35,4 +35,4 @@ db-stamp:
 	poetry run alembic stamp head
 
 db-revision:
-	poetry run alembic revision --autogenerate
+	DATABASE_URL="postgresql+psycopg://admin:admin@localhost/postgres" poetry run alembic revision --autogenerate

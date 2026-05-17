@@ -6,6 +6,7 @@ from gym_tracker.domain.models.metadata_secondary_muscle_group import (
     MetadataSecondaryMuscleGroup,
 )
 from gym_tracker.domain.models.muscle_group import MuscleGroup
+from gym_tracker.domain.models.user import User
 from gym_tracker.domain.models.workout import Workout
 
 __all__ = [
@@ -16,4 +17,5 @@ __all__ = [
     "MetadataSecondaryMuscleGroup",
     "MuscleGroup",
     "Workout",
+    "User",
 ]

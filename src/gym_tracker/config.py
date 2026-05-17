@@ -5,7 +5,7 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class Settings:
     database_url: str = os.getenv(
-        "DATABASE_URL", "postgresql+psycopg://admin:admin@postgres/workouts"
+        "DATABASE_URL", "postgresql+psycopg://admin:admin@postgres/postgres"
     )
     strengthlog_cookie: str | None = os.getenv("STRENGTHLOG_COOKIE")
 
