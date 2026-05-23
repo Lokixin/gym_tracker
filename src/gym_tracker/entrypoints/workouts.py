@@ -4,6 +4,8 @@ from starlette import status
 from starlette.responses import JSONResponse
 
 from gym_tracker.adapters.repositories import PostgresSQLRepo, RepositoryError
+from gym_tracker.domain.models import User
+from gym_tracker.entrypoints.auth import get_current_user_by_cookie
 from gym_tracker.entrypoints.dependencies import get_workouts_repo
 from gym_tracker.entrypoints.dtos import (
     WorkoutDTO,
@@ -41,10 +43,13 @@ def get_workout_by_id(
 def create_new_workout(
     workout_body: CreateWorkoutFromClient,
     workouts_repo: PostgresSQLRepo = Depends(get_workouts_repo),
+    current_user: User = Depends(get_current_user_by_cookie),
 ) -> JSONResponse:
     try:
         workout_id = create_new_workout_service(
-            workout_body=workout_body, workouts_repo=workouts_repo
+            workout_body=workout_body,
+            workouts_repo=workouts_repo,
+            user_id=current_user.id,
         )
     except RepositoryError as exc:
         raise HTTPException(

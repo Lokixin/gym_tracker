@@ -70,6 +70,7 @@ class PostgresSQLRepo:
         exercises: dict[str, list[dict[str, int | float | bool]]],
         workout_date: str | None = None,
         workout_duration: int | None = 0,
+        user_id: int | None = None,
     ) -> int:
         if not workout_date:
             workout_date_value = datetime.now(timezone.utc).date()
@@ -89,6 +90,7 @@ class PostgresSQLRepo:
                 exercises=exercises,
                 workout_date=workout_date_value,
                 workout_duration=workout_duration,
+                user_id=user_id,
             )
         except Exception as exc:
             logger.exception(
@@ -101,10 +103,10 @@ class PostgresSQLRepo:
         exercises: dict[str, list[dict[str, int | float | bool]]],
         workout_date: date,
         workout_duration: int | None,
+        user_id: int | None = None,
     ) -> int:
         workout = Workout(
-            date=workout_date,
-            duration=workout_duration or 0,
+            date=workout_date, duration=workout_duration or 0, user_id=user_id
         )
         self.session.add(workout)
         self.session.flush()
@@ -129,7 +131,8 @@ class PostgresSQLRepo:
                         for exercise_set in exercise_sets
                     ]
                 )
-
+        logger.warning("WORKOUT %s ID CREATED", workout.id)
+        self.session.commit()
         return workout.id
 
     def get_workout_by_date(
@@ -226,8 +229,12 @@ class PostgresSQLRepo:
             for exercise_id, exercise_name in results
         ]
 
-    def get_existing_workouts_dates(self) -> list[dict[str, str | int]]:
-        statement = select(Workout.id, Workout.date).order_by(Workout.date.desc())
+    def get_existing_workouts_dates(self, user_id: int) -> list[dict[str, str | int]]:
+        statement = (
+            select(Workout.id, Workout.date)
+            .filter(Workout.user_id == user_id)
+            .order_by(Workout.date.desc())
+        )
         results = self.session.execute(statement).all()
         return [
             {"id": workout_id, "date": str(workout_date)}

@@ -3,7 +3,7 @@ from datetime import timedelta, datetime, timezone
 from typing import Annotated
 
 import jwt
-from fastapi import Depends, APIRouter, HTTPException
+from fastapi import Depends, APIRouter, HTTPException, Response, Cookie
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jwt import InvalidTokenError
 from pwdlib import PasswordHash
@@ -12,6 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette import status
+from starlette.requests import Request
 
 from gym_tracker.entrypoints.dependencies import get_db_session
 from gym_tracker.domain.models.user import User as DBUser
@@ -98,7 +99,10 @@ def get_user(username: str | None, db_session: Session) -> UserInDB | None:
     if not user:
         return None
     return UserInDB(
-        username=user.username, hashed_password=user.password, email=user.email
+        username=user.username,
+        hashed_password=user.password,
+        email=user.email,
+        id=user.id,
     )
 
 
@@ -125,6 +129,30 @@ async def get_current_user(
     return user
 
 
+async def get_current_user_by_cookie(
+    auth_jwt: Annotated[str | None, Cookie()] = None,
+    db_session: Session = Depends(get_db_session),
+) -> User:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        logger.warning("Cookie found: %s", auth_jwt)
+        payload = jwt.decode(auth_jwt, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        token_data = TokenData(username=username)
+    except InvalidTokenError:
+        raise credentials_exception
+    user = get_user(username=token_data.username, db_session=db_session)
+    if user is None:
+        raise credentials_exception
+    return user
+
+
 async def get_current_active_user(
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> User:
@@ -135,6 +163,7 @@ async def get_current_active_user(
 
 @auth_router.post("/token")
 async def login(
+    response: Response,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db_session: Session = Depends(get_db_session),
 ):
@@ -149,6 +178,7 @@ async def login(
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
+    response.set_cookie(key="auth_jwt", value=access_token)
     return Token(access_token=access_token, token_type="bearer")
 
 

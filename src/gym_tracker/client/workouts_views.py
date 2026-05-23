@@ -4,6 +4,11 @@ from starlette.responses import HTMLResponse
 from starlette.templating import Jinja2Templates
 
 from gym_tracker.adapters.repositories import PostgresSQLRepo
+from gym_tracker.entrypoints.auth import (
+    get_current_user,
+    User,
+    get_current_user_by_cookie,
+)
 from gym_tracker.entrypoints.dependencies import get_workouts_repo
 
 
@@ -13,9 +18,11 @@ templates = Jinja2Templates(directory="templates")
 
 @client_router.get("/workouts/list")
 def get_workouts_by_date_view(
-    request: Request, repo: PostgresSQLRepo = Depends(get_workouts_repo)
+    request: Request,
+    repo: PostgresSQLRepo = Depends(get_workouts_repo),
+    current_user: User = Depends(get_current_user_by_cookie),
 ) -> HTMLResponse:
-    workouts = repo.get_existing_workouts_dates()
+    workouts = repo.get_existing_workouts_dates(current_user.id)
     return templates.TemplateResponse(
         request=request,
         name="read_workouts.html",
@@ -25,6 +32,6 @@ def get_workouts_by_date_view(
 
 @client_router.get("/workouts/add")
 def add_new_workout_view(
-    request: Request,
+    request: Request, current_user: User = Depends(get_current_user_by_cookie)
 ) -> HTMLResponse:
     return templates.TemplateResponse(request=request, name="add_workouts.html")
