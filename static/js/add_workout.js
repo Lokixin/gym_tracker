@@ -271,9 +271,10 @@ form.addEventListener("submit", async (e) => {
 
   try {
     const cookie_value = getCookieValue("auth_jwt")
+    const csrf_token = getCookieValue("csrf_token")
     const res = await fetch(createWorkoutEndpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Accept": "application/json", "Authorization": `Bearer ${cookie_value}`},
+      headers: {"Content-Type": "application/json", "Accept": "application/json", "Authorization": `Bearer ${cookie_value}`, "X-CSRF-Token": csrf_token},
       body: JSON.stringify(payload),
     });
     const body = await res.json();

@@ -26,7 +26,9 @@ date_query_parameter = Query(description="date of the workout", example="2024-10
 
 @workouts_router.get("/{workout_id}", response_model=WorkoutDTO)
 def get_workout_by_id(
-    workout_id: int, workouts_repo: PostgresSQLRepo = Depends(get_workouts_repo)
+    workout_id: int,
+    workouts_repo: PostgresSQLRepo = Depends(get_workouts_repo),
+    current_user: User = Depends(get_current_user_by_cookie),
 ) -> WorkoutDTO:
     try:
         return get_workout_by_id_service(

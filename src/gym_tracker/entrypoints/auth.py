@@ -1,9 +1,12 @@
+import hashlib
+import hmac
 import logging
+import secrets
 from datetime import timedelta, datetime, timezone
-from typing import Annotated
+from typing import Annotated, cast
 
 import jwt
-from fastapi import Depends, APIRouter, HTTPException, Response, Cookie
+from fastapi import Depends, APIRouter, HTTPException, Response, Cookie, Header
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jwt import InvalidTokenError
 from pwdlib import PasswordHash
@@ -12,7 +15,6 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette import status
-from starlette.requests import Request
 
 from gym_tracker.entrypoints.dependencies import get_db_session
 from gym_tracker.domain.models.user import User as DBUser
@@ -49,7 +51,7 @@ class User(BaseModel):
     email: EmailStr | None = Field(default=None)
     full_name: str | None = None
     disabled: bool | None = None
-    id: int | None = None
+    id: int
 
 
 class UserInDB(User):
@@ -79,13 +81,16 @@ def authenticate_user(
     return user
 
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
+def create_access_token(
+    data: dict, session_id: str, expires_delta: timedelta | None = None
+):
     to_encode = data.copy()
     if expires_delta:
         expire_in = datetime.now(timezone.utc) + expires_delta
     else:
         expire_in = datetime.now(timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire_in})
+    to_encode.update({"jit": session_id})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
@@ -95,7 +100,6 @@ def get_user(username: str | None, db_session: Session) -> UserInDB | None:
         return None
     user_statement = select(DBUser).where(DBUser.username == username)
     user = db_session.scalars(user_statement).one()
-    logger.error(f"Retrieved {user}")
     if not user:
         return None
     return UserInDB(
@@ -131,6 +135,7 @@ async def get_current_user(
 
 async def get_current_user_by_cookie(
     auth_jwt: Annotated[str | None, Cookie()] = None,
+    x_csrf_token: Annotated[str | None, Header()] = None,
     db_session: Session = Depends(get_db_session),
 ) -> User:
     credentials_exception = HTTPException(
@@ -139,12 +144,27 @@ async def get_current_user_by_cookie(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        logger.warning("Cookie found: %s", auth_jwt)
+        assert auth_jwt
         payload = jwt.decode(auth_jwt, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
+        session_id = cast(str, payload.get("jit"))
+        assert session_id and isinstance(session_id, str)
         if username is None:
             raise credentials_exception
         token_data = TokenData(username=username)
+        if x_csrf_token:
+            csrf_token, random_value = x_csrf_token.split(".")
+            message = (
+                f"{len(session_id)}!{session_id}!{len(random_value)}!{random_value}"
+            )
+            expected_hmac = hmac.new(
+                SECRET_KEY.encode(), message.encode(), digestmod=hashlib.sha256
+            )
+            does_signature_match = hmac.compare_digest(
+                csrf_token, expected_hmac.hexdigest()
+            )
+            if not does_signature_match:
+                raise credentials_exception
     except InvalidTokenError:
         raise credentials_exception
     user = get_user(username=token_data.username, db_session=db_session)
@@ -175,10 +195,20 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
+    session_id = secrets.token_urlsafe(32)
+    random_value = secrets.token_hex(64)
+    message = f"{len(session_id)}!{session_id}!{len(random_value)}!{random_value}"
+    hmac_message = hmac.new(
+        SECRET_KEY.encode(), message.encode(), digestmod=hashlib.sha256
     )
+    access_token = create_access_token(
+        data={"sub": user.username},
+        expires_delta=access_token_expires,
+        session_id=session_id,
+    )
+    csrf_token = hmac_message.hexdigest() + "." + random_value
     response.set_cookie(key="auth_jwt", value=access_token)
+    response.set_cookie(key="csrf_token", value=csrf_token, httponly=False)
     return Token(access_token=access_token, token_type="bearer")
 
 

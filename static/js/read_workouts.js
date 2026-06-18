@@ -49,9 +49,12 @@ function setSelectedDate(value) {
 async function fetchWorkoutById(workoutId) {
   const url = `${workoutsByIdEndpoint}/${encodeURIComponent(workoutId)}`;
   const cookie_value = getCookieValue("auth_jwt")
+  const csrf_token = getCookieValue("csrf_token")
+  console.log(csrf_token)
   const headers = {
     "Content-Type": "application/json",
-    "Authorization": `Bearer ${cookie_value}`
+    "Authorization": `Bearer ${cookie_value}`,
+    "X-CSRF-Token": csrf_token
   };
   const response = await fetch(url, {headers});
   return response.json();

@@ -1,13 +1,11 @@
 from dataclasses import dataclass
 
-from fastapi import Depends
 
 from gym_tracker.adapters.mappers import (
     workout_from_db_to_dto,
     create_workout_body_to_repo_payload,
 )
 from gym_tracker.adapters.repositories import PostgresSQLRepo
-from gym_tracker.entrypoints.auth import User, get_current_user_by_cookie
 from gym_tracker.entrypoints.dtos import (
     CreateWorkoutFromClient,
     WorkoutDTO,
