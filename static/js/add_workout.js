@@ -46,15 +46,6 @@ function updateAddButtonState(){
   setInputValidity(valid);
 }
 
-function getCookieValue(name)
-    {
-      const regex = new RegExp(`(^| )${name}=([^;]+)`)
-      const match = document.cookie.match(regex)
-      if (match) {
-        return match[2]
-      }
-   }
-
 /* ---------- Suggestions (datalist) ---------- */
 let suggestAbort;
 exerciseInput.addEventListener("input", async (e) => {
@@ -270,11 +261,9 @@ form.addEventListener("submit", async (e) => {
   };
 
   try {
-    const cookie_value = getCookieValue("auth_jwt")
-    const csrf_token = getCookieValue("csrf_token")
-    const res = await fetch(createWorkoutEndpoint, {
+    const res = await csrfFetch(createWorkoutEndpoint, {
       method: "POST",
-      headers: {"Content-Type": "application/json", "Accept": "application/json", "Authorization": `Bearer ${cookie_value}`, "X-CSRF-Token": csrf_token},
+      headers: {"Content-Type": "application/json", "Accept": "application/json"},
       body: JSON.stringify(payload),
     });
     const body = await res.json();
