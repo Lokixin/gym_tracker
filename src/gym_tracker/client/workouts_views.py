@@ -2,7 +2,7 @@ import logging
 
 from fastapi import APIRouter, Depends
 from starlette.requests import Request
-from starlette.responses import HTMLResponse
+from starlette.responses import HTMLResponse, RedirectResponse
 from starlette.templating import Jinja2Templates
 
 from gym_tracker.adapters.repositories import PostgresSQLRepo
@@ -16,6 +16,21 @@ from gym_tracker.entrypoints.dependencies import get_workouts_repo
 client_router = APIRouter(prefix="/app")
 templates = Jinja2Templates(directory="templates")
 logger = logging.getLogger(__name__)
+
+
+@client_router.get("")
+def app_home_view() -> RedirectResponse:
+    return RedirectResponse(url="/app/login")
+
+
+@client_router.get("/login")
+def login_view(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse(request=request, name="login.html")
+
+
+@client_router.get("/register")
+def register_view(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse(request=request, name="register.html")
 
 
 @client_router.get("/workouts/list")

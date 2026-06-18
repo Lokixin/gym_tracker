@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gym Tracker • Register</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/static/css/auth.css" />
+</head>
+<body>
+  <main class="auth-shell register-shell" aria-label="Create account">
+    <section class="hero-panel" aria-label="Training profile preview">
+      <div class="brand-mark">GT</div>
+      <p class="eyebrow">Start strong</p>
+      <h1>Your training log should feel alive.</h1>
+      <p class="hero-copy">Create an account and turn every set into a clean record you can build from tomorrow.</p>
+      <div class="timeline-card" aria-label="Simple workflow">
+        <span class="timeline-dot"></span>
+        <div>
+          <strong>Plan</strong>
+          <small>Pick the movement and intent.</small>
+        </div>
+        <span class="timeline-dot"></span>
+        <div>
+          <strong>Lift</strong>
+          <small>Capture sets without friction.</small>
+        </div>
+        <span class="timeline-dot"></span>
+        <div>
+          <strong>Review</strong>
+          <small>Know what to beat next time.</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="auth-card" aria-labelledby="register-title">
+      <div class="card-header">
+        <p class="eyebrow">Create account</p>
+        <h2 id="register-title">Register your profile</h2>
+        <p>Choose credentials you will use to log workouts.</p>
+      </div>
+
+      <form class="auth-form" data-auth-mode="register" novalidate>
+        <div class="field">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" autocomplete="username" required minlength="3" placeholder="marathon_maria" />
+        </div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" required placeholder="you@example.com" />
+        </div>
+
+        <div class="field-grid">
+          <div class="field">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="new-password" required minlength="8" placeholder="At least 8 characters" />
+          </div>
+
+          <div class="field">
+            <label for="confirm_password">Confirm</label>
+            <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" required minlength="8" placeholder="Repeat password" />
+          </div>
+        </div>
+
+        <div class="form-message" data-auth-message role="status" aria-live="polite"></div>
+
+        <button class="auth-button" type="submit" data-default-label="Create account">Create account</button>
+      </form>
+
+      <p class="switch-copy">Already registered? <a href="/app/login">Login instead</a></p>
+    </section>
+  </main>
+
+  <script src="/static/js/config.js" defer></script>
+  <script src="/static/js/auth.js" defer></script>
+</body>
+</html>

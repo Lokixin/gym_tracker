@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gym Tracker • Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/static/css/auth.css" />
+</head>
+<body>
+  <main class="auth-shell" aria-label="Login">
+    <section class="hero-panel" aria-label="Training dashboard preview">
+      <div class="brand-mark">GT</div>
+      <p class="eyebrow">Gym Tracker</p>
+      <h1>Build the habit. Track every rep.</h1>
+      <p class="hero-copy">Log in to review your recent sessions, keep momentum visible, and make the next workout obvious.</p>
+      <div class="metric-grid" aria-label="Product highlights">
+        <div class="metric-card">
+          <span>12</span>
+          <small>workouts this month</small>
+        </div>
+        <div class="metric-card accent">
+          <span>86%</span>
+          <small>weekly consistency</small>
+        </div>
+        <div class="metric-card wide">
+          <span>Progressive overload</span>
+          <small>See strength trends session by session.</small>
+        </div>
+      </div>
+    </section>
+
+    <section class="auth-card" aria-labelledby="login-title">
+      <div class="card-header">
+        <p class="eyebrow">Welcome back</p>
+        <h2 id="login-title">Login to your account</h2>
+        <p>Use your username and password to continue.</p>
+      </div>
+
+      <form class="auth-form" data-auth-mode="login" novalidate>
+        <div class="field">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" autocomplete="username" required minlength="3" placeholder="marathon_maria" />
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required minlength="8" placeholder="Your password" />
+        </div>
+
+        <div class="form-message" data-auth-message role="status" aria-live="polite"></div>
+
+        <button class="auth-button" type="submit" data-default-label="Login">Login</button>
+      </form>
+
+      <p class="switch-copy">New here? <a href="/app/register">Create an account</a></p>
+    </section>
+  </main>
+
+  <script src="/static/js/config.js" defer></script>
+  <script src="/static/js/auth.js" defer></script>
+</body>
+</html>

@@ -58,7 +58,9 @@ class UserInDB(User):
     hashed_password: str
 
 
-class CreateUserRequest(User):
+class CreateUserRequest(BaseModel):
+    username: str
+    email: EmailStr
     plain_text_password: str
 
 
@@ -99,7 +101,7 @@ def get_user(username: str | None, db_session: Session) -> UserInDB | None:
     if not username:
         return None
     user_statement = select(DBUser).where(DBUser.username == username)
-    user = db_session.scalars(user_statement).one()
+    user = db_session.scalars(user_statement).one_or_none()
     if not user:
         return None
     return UserInDB(
